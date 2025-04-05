@@ -17,10 +17,10 @@ public class Player implements Serializable {
     @Column(nullable = false,updatable = false,length = 16)
     private String username;
 
-    private int Xpos;
+    private int xpos;
 
 
-    private int Ypos;
+    private int ypos;
 
     private int hp;
 
@@ -35,29 +35,29 @@ public class Player implements Serializable {
         this.username = username;
         //this.password = password;
         this.direction = DOWN;
-        this.Xpos = x;
-        this.Ypos = y;
+        this.xpos = x;
+        this.ypos = y;
     }
     public Player (Player player){
         this.username = player.username;
         //this.password = password;
         this.direction = player.direction;
-        this.Xpos = player.Xpos;
-        this.Ypos = player.Ypos;
+        this.xpos = player.xpos;
+        this.ypos = player.ypos;
     }
 
     public int getYpos() {
-        return Ypos;
+        return ypos;
     }
     public void setYpos(int ypos) {
-        Ypos = ypos;
+        this.ypos = ypos;
     }
 
     public int getXpos() {
-        return Xpos;
+        return xpos;
     }
     public void setXpos(int xpos) {
-        Xpos = xpos;
+        this.xpos = xpos;
     }
 
     public int getDirection() {
@@ -77,7 +77,7 @@ public class Player implements Serializable {
 
     @Override
     public String toString () {
-        return "Player{" + "username=" + username + ", Xpos: " + Xpos + ", Ypos: " + Ypos + "}";
+        return "Player{" + "username=" + username + ", Xpos: " + xpos + ", Ypos: " + ypos + "}";
     }
 
 

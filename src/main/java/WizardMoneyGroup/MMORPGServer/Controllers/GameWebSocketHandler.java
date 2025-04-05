@@ -1,6 +1,7 @@
 package WizardMoneyGroup.MMORPGServer.Controllers;
 
 import WizardMoneyGroup.MMORPGServer.Models.GameData;
+import WizardMoneyGroup.MMORPGServer.Models.Player;
 import WizardMoneyGroup.MMORPGServer.Models.UpdateInput;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.socket.WebSocketSession;
