@@ -51,6 +51,8 @@ public class GameServer {
         }
     }
 
+
+
     private void processAction(PlayerAction action) {
         Player player = players.get(action.getPlayerId());
         if (player != null){
@@ -133,9 +135,7 @@ public class GameServer {
     }
 
     private String serializeGameState(GameState gameState) {
-
-        //TODO code in here use Jackson or GSON
-        return "{}";
+         return gson.toJson(gameState);
     }
 
     public void shutdown(){
