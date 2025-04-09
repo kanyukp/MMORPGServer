@@ -1,95 +1,130 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
-import javax.persistence.*;
-import java.io.Serializable;
-@Entity
-public class Projectile implements Serializable {
-    // @Id
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // @Column(nullable = false,updatable = false)
-    // private Long id;
+public class Projectile implements Entity {
+    private int x,y,width,height;
+    private int originX, originY;
+    private int maxTravelDistance;
+    private int damage;
+    private PlayerAction.Direction direction;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(nullable = false,updatable = false)
-    private long entityID;
+    public Projectile(int x, int y, int width, int height, int originX, int originY, int maxTravelDistance, int damage, PlayerAction.Direction direction) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.originX = originX;
+        this.originY = originY;
+        this.maxTravelDistance = maxTravelDistance;
+        this.damage = damage;
+        this.direction = direction;
+    }
+    public Projectile(int x, int y, PlayerAction.Direction direction) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.originX = originX;
+        this.originY = originY;
+        this.maxTravelDistance = maxTravelDistance;
+        this.damage = damage;
+        this.direction = direction;
+    }
 
-    //    private String username;
-    @Column
-    private int Xpos;
-    @Column
-    private int Ypos;
-    @Column
-    private  int Xdir;
-
-    @Column
-    private int Ydir;
-
-    @Column
-    private int Dmg;
-
-    public Projectile(){}
-
-    public Projectile(long entityID, int Xpos, int Ypos, int Xdir, int Ydir, int Dmg)
-    {
-        this.entityID = entityID;
-        this.Xpos = Xpos;
-        this.Ypos = Ypos;
-        this.Xdir = Xdir;
-        this.Ydir = Ydir;
-        this.Dmg = Dmg;
+    public void move(){
+        switch (direction) {
+            case UP:
+                y -= 1;
+                break;
+            case DOWN:
+                y += 1;
+                break;
+            case LEFT:
+                x -= 1;
+                break;
+            case RIGHT:
+                x += 1;
+                break;
+        }
+    }
+    public boolean hasExceededMaxDistance() {
+        int dx = x-originX;
+        int dy = y-originY;
+        return dx * dx + dy * dy > maxTravelDistance * maxTravelDistance;
     }
 
     @Override
-    public String toString () {
-        return "Projectile{" + "entityID=" + entityID + ", Xpos: " + Xpos + ", Ypos: " + Ypos + "}";
+    public int getX() {
+        return x;
     }
 
-    public long getEntityID() {
-        return entityID;
+    public void setX(int x) {
+        this.x = x;
     }
 
-    public void setEntityID(long entityID) {
-        this.entityID = entityID;
+    @Override
+    public int getY() {
+        return y;
     }
 
-    public int getXpos() {
-        return Xpos;
+    public void setY(int y) {
+        this.y = y;
     }
 
-    public void setXpos(int xpos) {
-        Xpos = xpos;
+    @Override
+    public int getWidth() {
+        return width;
     }
 
-    public int getYpos() {
-        return Ypos;
+    public void setWidth(int width) {
+        this.width = width;
     }
 
-    public void setYpos(int ypos) {
-        Ypos = ypos;
+    @Override
+    public int getHeight() {
+        return height;
     }
 
-    public int getYdir() {
-        return Ydir;
+    public void setHeight(int height) {
+        this.height = height;
     }
 
-    public void setYdir(int ydir) {
-        Ydir = ydir;
+    public int getOriginX() {
+        return originX;
     }
 
-    public int getXdir() {
-        return Xdir;
+    public void setOriginX(int originX) {
+        this.originX = originX;
     }
 
-    public void setXdir(int xdir) {
-        Xdir = xdir;
+    public int getOriginY() {
+        return originY;
     }
 
-    public int getDmg() {
-        return Dmg;
+    public void setOriginY(int originY) {
+        this.originY = originY;
     }
 
-    public void setDmg(int dmg) {
-        Dmg = dmg;
+    public int getMaxTravelDistance() {
+        return maxTravelDistance;
+    }
+
+    public void setMaxTravelDistance(int maxTravelDistance) {
+        this.maxTravelDistance = maxTravelDistance;
+    }
+
+    public int getDamage() {
+        return damage;
+    }
+
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+
+    public PlayerAction.Direction getDirection() {
+        return direction;
+    }
+
+    public void setDirection(PlayerAction.Direction direction) {
+        this.direction = direction;
     }
 }

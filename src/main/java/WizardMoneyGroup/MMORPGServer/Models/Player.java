@@ -1,84 +1,91 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
-import javax.persistence.*;
-import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-import static testgrouppleaseignore.demo.Constants.*;
-
-@Entity
-public class Player implements Serializable {
-
-   // @Id
-   // @GeneratedValue(strategy = GenerationType.IDENTITY)
-   // @Column(nullable = false,updatable = false)
-   // private Long id;
-
-    @Id
-    @Column(nullable = false,updatable = false,length = 16)
-    private String username;
-
-    private int xpos;
-
-
-    private int ypos;
-
+public class Player implements Entity {
+    private int x,y,width,height;
     private int hp;
+    private PlayerAction.ActionType currentAction;
+    private List<Item> inventory;
+    private boolean inventoryOpen;
 
-    private int direction;
-
-    public Player(){}
-
-
-
-    public Player(String username, int x, int y)
-    {
-        this.username = username;
-        //this.password = password;
-        this.direction = DOWN;
-        this.xpos = x;
-        this.ypos = y;
-    }
-    public Player (Player player){
-        this.username = player.username;
-        //this.password = password;
-        this.direction = player.direction;
-        this.xpos = player.xpos;
-        this.ypos = player.ypos;
-    }
-
-    public int getYpos() {
-        return ypos;
-    }
-    public void setYpos(int ypos) {
-        this.ypos = ypos;
-    }
-
-    public int getXpos() {
-        return xpos;
-    }
-    public void setXpos(int xpos) {
-        this.xpos = xpos;
-    }
-
-    public int getDirection() {
-        return direction;
-    }
-
-    public void setDirection(int direction) {
-        this.direction = direction;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-    public void setUsername(String username) {
-        this.username = username;
+    public Player(int x, int y, int width, int height, int hp ) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.hp = hp;
+        this.currentAction = PlayerAction.ActionType.IDLE;
+        this.inventory = new ArrayList<>();
+        this.inventoryOpen = false;
     }
 
     @Override
-    public String toString () {
-        return "Player{" + "username=" + username + ", Xpos: " + xpos + ", Ypos: " + ypos + "}";
+    public int getX() {
+        return x;
     }
 
+    public void setX(int x) {
+        this.x = x;
+    }
 
+    @Override
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    @Override
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public int getHp() {
+        return hp;
+    }
+
+    public void setHp(int hp) {
+        this.hp = hp;
+    }
+
+    public PlayerAction.ActionType getCurrentAction() {
+        return currentAction;
+    }
+
+    public void setCurrentAction(PlayerAction.ActionType currentAction) {
+        this.currentAction = currentAction;
+    }
+
+    public List<Item> getInventory() {
+        return inventory;
+    }
+
+    public void setInventory(List<Item> inventory) {
+        this.inventory = inventory;
+    }
+
+    public boolean isInventoryOpen() {
+        return inventoryOpen;
+    }
+
+    public void setInventoryOpen(boolean inventoryOpen) {
+        this.inventoryOpen = inventoryOpen;
+    }
 }
