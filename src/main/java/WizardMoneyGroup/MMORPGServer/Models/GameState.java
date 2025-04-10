@@ -5,15 +5,19 @@ import java.util.Map;
 
 public class GameState {
 
-    private final Map<String, Player> players;
+    private final Collection<Player> players;
     private final Collection<Projectile> projectiles;
+    private final Collection<Block> blocks;
+    private final Collection<ItemEntity> itemEntities;
 
-    public GameState(Map<String, Player> players, Collection<Projectile> projectiles) {
+    public GameState(Collection<Player> players, Collection<Projectile> projectiles, Collection<Block> blocks, Collection<ItemEntity> itemEntities) {
         this.players = players;
         this.projectiles = projectiles;
+        this.blocks = blocks;
+        this.itemEntities = itemEntities;
     }
 
-    public Map<String, Player> getPlayers() {
+    public Collection<Player> getPlayers() {
         return players;
     }
 

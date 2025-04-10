@@ -1,6 +1,7 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
 public class PlayerAction {
+
     public enum ActionType {
         IDLE, MOVE, ATTACK, PLACE, BREAK, DROP, OPEN_INVENTORY, CLOSE_INVENTORY
     }

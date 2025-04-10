@@ -27,7 +27,7 @@ public class ItemDAO {
         jdbcTemplate.update(sql, item.getName(), item.getSprite());
     }
 
-    private static class ItemRowMapper implements RowMapper<Item> {
+    static class ItemRowMapper implements RowMapper<Item> {
         @Override
         public Item mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new Item(rs.getInt("ItemID"), rs.getString("Name"), rs.getString("Sprite"));

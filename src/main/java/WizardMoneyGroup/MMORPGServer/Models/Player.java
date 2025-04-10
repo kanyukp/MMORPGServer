@@ -6,9 +6,16 @@ import java.util.List;
 public class Player implements Entity {
     private int x,y,width,height;
     private int hp;
-    private PlayerAction.ActionType currentAction;
+    private Player.Action currentAction;
     private List<Item> inventory;
     private boolean inventoryOpen;
+
+    private String id;
+
+    public enum Action {
+        IDLE, MOVE, ATTACK, PLACE, BREAK, DROP, OPEN_INVENTORY, CLOSE_INVENTORY
+
+    }
 
     public Player(int x, int y, int width, int height, int hp ) {
         this.x = x;
@@ -16,7 +23,7 @@ public class Player implements Entity {
         this.width = width;
         this.height = height;
         this.hp = hp;
-        this.currentAction = PlayerAction.ActionType.IDLE;
+        this.currentAction = Player.Action.IDLE;
         this.inventory = new ArrayList<>();
         this.inventoryOpen = false;
     }
@@ -65,16 +72,24 @@ public class Player implements Entity {
         this.hp = hp;
     }
 
-    public PlayerAction.ActionType getCurrentAction() {
+    public Player.Action getCurrentAction() {
         return currentAction;
     }
 
-    public void setCurrentAction(PlayerAction.ActionType currentAction) {
+    public void setCurrentAction(Player.Action currentAction) {
         this.currentAction = currentAction;
     }
 
     public List<Item> getInventory() {
         return inventory;
+    }
+
+    public void addItem(Item item){
+        inventory.add(item);
+    }
+
+    public void removeItem(Item item){
+        inventory.remove(item);
     }
 
     public void setInventory(List<Item> inventory) {
@@ -87,5 +102,13 @@ public class Player implements Entity {
 
     public void setInventoryOpen(boolean inventoryOpen) {
         this.inventoryOpen = inventoryOpen;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }
