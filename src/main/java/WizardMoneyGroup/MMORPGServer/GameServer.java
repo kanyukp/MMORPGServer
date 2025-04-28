@@ -14,7 +14,7 @@ import java.util.concurrent.*;
 public class GameServer {
     private static final int VISIBILITY_RANGE = 400;
     private static final int BREAK_TIME_MS = 2000;
-    private static  final int BREAK_RANGE = 50;
+    private static final int BREAK_RANGE = 50;
 
     private QuadTree quadTree;
     private final Map<String, Player> players = new ConcurrentHashMap<>();
@@ -35,12 +35,12 @@ public class GameServer {
 
 
     @Autowired
-    public GameServer(InventoryService inventoryService){
+    public GameServer(InventoryService inventoryService) {
         this.inventoryService = inventoryService;
         startGameLoop();
     }
 
-    public void handleClientMessage(PlayerAction action){
+    public void handleClientMessage(PlayerAction action) {
         actionQueue.offer(action);
     }
 
@@ -48,22 +48,22 @@ public class GameServer {
         actionQueue.offer(update);
     }
 
-    private void startGameLoop(){
-        gameLoopExecutor.scheduleAtFixedRate(this::updateGame, 0, 1000/60, TimeUnit.MILLISECONDS);
+    private void startGameLoop() {
+        gameLoopExecutor.scheduleAtFixedRate(this::updateGame, 0, 1000 / 60, TimeUnit.MILLISECONDS);
     }
 
     private void updateGame() {
         quadTree.clear();
-        for(Player player : players.values()){
+        for (Player player : players.values()) {
             quadTree.insert(player);
         }
-        for(Projectile projectile : projectiles){
+        for (Projectile projectile : projectiles) {
             quadTree.insert(projectile);
         }
-        for(Block block : blocks){
+        for (Block block : blocks) {
             quadTree.insert(block);
         }
-        for(ItemEntity itemEntity : itemEntities) {
+        for (ItemEntity itemEntity : itemEntities) {
             quadTree.insert(itemEntity);
         }
 
@@ -75,10 +75,10 @@ public class GameServer {
         sendGameStateToClients();
     }
 
-    private void processActions(){
+    private void processActions() {
         PlayerAction action;
         while ((action = actionQueue.poll()) != null) {
-            if(!playersActedThisFrame.contains((action.getPlayerId()))){
+            if (!playersActedThisFrame.contains((action.getPlayerId()))) {
                 processAction(action);
                 playersActedThisFrame.add(action.getPlayerId());
             }
@@ -86,11 +86,10 @@ public class GameServer {
     }
 
 
-
     private void processAction(PlayerAction action) {
         Player player = players.get(action.getPlayerId());
-        if (player != null){
-            if(player.isInventoryOpen() && action.getActionType() != PlayerAction.ActionType.CLOSE_INVENTORY) {
+        if (player != null) {
+            if (player.isInventoryOpen() && action.getActionType() != PlayerAction.ActionType.CLOSE_INVENTORY) {
                 return;
             }
 
@@ -127,7 +126,7 @@ public class GameServer {
         }
     }
 
-    private void movePlayer(Player player, PlayerAction.Direction direction){
+    private void movePlayer(Player player, PlayerAction.Direction direction) {
         switch (direction) {
             case UP:
                 player.setY(player.getY() - 1);
@@ -144,12 +143,12 @@ public class GameServer {
         }
     }
 
-    private void createProjectile(Player player, PlayerAction.Direction direction){
+    private void createProjectile(Player player, PlayerAction.Direction direction) {
         Projectile projectile = new Projectile(player.getX(), player.getY(), direction);
         projectiles.add(projectile);
     }
 
-    private void placeBlock(Player player, PlayerAction action){
+    private void placeBlock(Player player, PlayerAction action) {
         int x = action.getX();
         int y = action.getY();
         int width = action.getWidth();
@@ -171,12 +170,12 @@ public class GameServer {
                 break;
         }
 
-        Block tempBlock = new Block(x,y,width,height,true,sprite);
+        Block tempBlock = new Block(x, y, width, height, true, sprite);
 
         List<Entity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), tempBlock);
-        for(Entity entity : nearbyEntities){
+        for (Entity entity : nearbyEntities) {
             if (entity instanceof Block && ((Block) entity).isCollide()) {
-                if(intersects(tempBlock, entity)) {
+                if (intersects(tempBlock, entity)) {
 //                    sendResponseToPlayer(player, "No Space"); TODO
                     return;
                 }
@@ -187,24 +186,24 @@ public class GameServer {
 
     }
 
-    private void breakBlock(Player player, PlayerAction action){
+    private void breakBlock(Player player, PlayerAction action) {
         int mouseX = action.getX();
         int mouseY = action.getY();
 
         List<Entity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), player);
-        for(Entity entity : nearbyEntities){
+        for (Entity entity : nearbyEntities) {
             if (entity instanceof Block && ((Block) entity).isCollide()) {
                 Block block = (Block) entity;
-                Block mouse = new Block(mouseX,mouseY);
-                if(intersects(block, mouse) && isWithinBreakRange(player,block)) {
-                    initiateBreakingProcess(player,block);
+                Block mouse = new Block(mouseX, mouseY);
+                if (intersects(block, mouse) && isWithinBreakRange(player, block)) {
+                    initiateBreakingProcess(player, block);
                     return;
                 }
             }
         }
     }
 
-    private void initiateBreakingProcess(Player player, Block block){
+    private void initiateBreakingProcess(Player player, Block block) {
 
         ScheduledFuture<?> existingTask = breakingTasks.get(player.getId());
         if (existingTask != null) {
@@ -212,15 +211,16 @@ public class GameServer {
         }
 
         ScheduledFuture<?> breakingTask = executorService.schedule(() -> {
-            if (blocks.contains(block) && isWithinBreakRange(player,block)) {
+            if (blocks.contains(block) && isWithinBreakRange(player, block)) {
                 blocks.remove(block);
                 //TODO breaking successful
             } else {
                 //TODO breaking failed
             }
-        }, BREAK_TIME_MS, TimeUnit.MILLISECONDS );
+        }, BREAK_TIME_MS, TimeUnit.MILLISECONDS);
         breakingTasks.put(player.getId(), breakingTask);
     }
+
     private void dropItem(Player player, PlayerAction action) {
         ItemEntity itemEntity = new ItemEntity(action.getX(), action.getY(), action.getWidth(), action.getHeight(), action.getItemName(), action.getSprite());
         itemEntities.add(itemEntity);
@@ -228,22 +228,22 @@ public class GameServer {
         Item itemToDrop = player.getInventory().stream()
                 .filter(item -> item.getName().equals(action.getItemName()))
                 .findFirst().orElse(null);
-        if(itemToDrop != null){
+        if (itemToDrop != null) {
             inventoryService.removeItemFromPlayer(player, itemToDrop);
         }
     }
 
     private void checkItemCollisions() {
         Iterator<ItemEntity> iterator = itemEntities.iterator();
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             ItemEntity itemEntity = iterator.next();
-            List<Entity> nearbyEntities = quadTree.retrieve(new ArrayList<>(),itemEntity);
-            for(Entity entity : nearbyEntities){
+            List<Entity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), itemEntity);
+            for (Entity entity : nearbyEntities) {
                 if (entity instanceof Player) {
                     Player player = (Player) entity;
-                    if(intersects(itemEntity, player)) {
+                    if (intersects(itemEntity, player)) {
                         Item item = new Item(0, itemEntity.getName(), itemEntity.getSprite());
-                        inventoryService.addItemToPlayer(player,item);
+                        inventoryService.addItemToPlayer(player, item);
                         iterator.remove();
                         break;
                     }
@@ -251,14 +251,15 @@ public class GameServer {
             }
         }
     }
-    private void openInventory(Player player){
+
+    private void openInventory(Player player) {
         player.setInventoryOpen(true);
         List<Item> inventory = player.getInventory();
         gson.toJson(inventory);
         //TODO send inventory to client
     }
 
-    private void closeInventory(Player player){
+    private void closeInventory(Player player) {
         player.setInventoryOpen(false);
     }
 
@@ -309,52 +310,52 @@ public class GameServer {
 
     private void sendGameStateToClients() {
         GameState gameState = new GameState(players.values(), projectiles, blocks, itemEntities);
-        for(Player player : players.values()) {
+        for (Player player : players.values()) {
             List<Player> visiblePlayers = getVisiblePlayers(player);
             List<Projectile> visibleProjectiles = getVisibleProjectiles(player);
         }
     }
 
-    private List<Player> getVisiblePlayers(Player player){
+    private List<Player> getVisiblePlayers(Player player) {
         List<Player> visiblePlayers = new ArrayList<>();
-        for (Player otherPlayer : players.values()){
-            if(!otherPlayer.equals(player) && isWithinVisibilityRange(player, otherPlayer)){
+        for (Player otherPlayer : players.values()) {
+            if (!otherPlayer.equals(player) && isWithinVisibilityRange(player, otherPlayer)) {
                 visiblePlayers.add(otherPlayer);
             }
         }
         return visiblePlayers;
     }
 
-    private List<Projectile> getVisibleProjectiles(Player player){
+    private List<Projectile> getVisibleProjectiles(Player player) {
         List<Projectile> visibleProjectiles = new ArrayList<>();
-        for (Projectile projectile : projectiles){
-            if(isWithinVisibilityRange(player, projectile)){
+        for (Projectile projectile : projectiles) {
+            if (isWithinVisibilityRange(player, projectile)) {
                 visibleProjectiles.add(projectile);
             }
         }
         return visibleProjectiles;
     }
 
-    private boolean isWithinVisibilityRange(Entity entity1, Entity entity2){
+    private boolean isWithinVisibilityRange(Entity entity1, Entity entity2) {
         int dx = entity1.getX() - entity2.getX();
         int dy = entity1.getY() - entity2.getY();
         return dx * dx + dy * dy <= VISIBILITY_RANGE * VISIBILITY_RANGE;
     }
 
-    private boolean isWithinBreakRange(Entity entity1, Entity entity2){
+    private boolean isWithinBreakRange(Entity entity1, Entity entity2) {
         int dx = entity1.getX() - entity2.getX();
         int dy = entity1.getY() - entity2.getY();
         return dx * dx + dy * dy <= BREAK_RANGE * BREAK_RANGE;
     }
 
     private String serializeGameState(GameState gameState) {
-         return gson.toJson(gameState);
+        return gson.toJson(gameState);
     }
 
-    public void shutdown(){
+    public void shutdown() {
         gameLoopExecutor.shutdown();
         try {
-            if(!gameLoopExecutor.awaitTermination(5,TimeUnit.SECONDS)){
+            if (!gameLoopExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
                 gameLoopExecutor.shutdownNow();
             }
         } catch (InterruptedException e) {

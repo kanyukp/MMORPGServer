@@ -4,9 +4,11 @@ import WizardMoneyGroup.MMORPGServer.DAO.UserRepository;
 import WizardMoneyGroup.MMORPGServer.Models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Service
 public class LoginService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -33,7 +35,9 @@ public class LoginService {
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
+            System.out.println("Looking for user!");
             if(passwordEncoder.matches(password, user.getPasswordHash())){
+                System.out.println("Found user!");
                 return Optional.of(user);
             }
         }
