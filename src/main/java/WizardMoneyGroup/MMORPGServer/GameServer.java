@@ -6,11 +6,13 @@ import WizardMoneyGroup.MMORPGServer.Services.InventoryService;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.relational.core.sql.Update;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.*;
 import java.util.concurrent.*;
 
+@Component
 public class GameServer {
     private static final int VISIBILITY_RANGE = 400;
     private static final int BREAK_TIME_MS = 2000;
@@ -361,5 +363,13 @@ public class GameServer {
         } catch (InterruptedException e) {
             gameLoopExecutor.shutdownNow();
         }
+    }
+
+    public void removeSession( WebSocketSession session){
+        sessions.remove(session);
+    }
+
+    public void addSession( WebSocketSession session){
+        sessions.add(session);
     }
 }

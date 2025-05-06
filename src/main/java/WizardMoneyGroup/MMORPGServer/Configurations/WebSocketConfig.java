@@ -1,6 +1,7 @@
 package WizardMoneyGroup.MMORPGServer.Configurations;
 
 import WizardMoneyGroup.MMORPGServer.Controllers.GameWebSocketHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -14,9 +15,16 @@ import java.util.concurrent.Executor;
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer{
 
+    private final GameWebSocketHandler gameWebSocketHandler;
+
+    @Autowired
+    public WebSocketConfig( GameWebSocketHandler gameWebSocketHandler){
+        this.gameWebSocketHandler = gameWebSocketHandler;
+    }
+
     @Override
     public void registerWebSocketHandlers (WebSocketHandlerRegistry registry){
-        registry.addHandler(new GameWebSocketHandler(), "/game").setAllowedOrigins("*");
+        registry.addHandler( gameWebSocketHandler, "/game").setAllowedOrigins("*");
     }
 
     @Bean

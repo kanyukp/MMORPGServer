@@ -16,6 +16,7 @@ public class SecurityConfig {
                 .csrf().disable() // 🔵 Disable CSRF for API
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/**").permitAll() // 🔵 Allow public access to /api/auth/**
+                        .requestMatchers("/game/**").permitAll() // ✅ Allow WebSocket endpoint
                         .anyRequest().authenticated()
                 )
                 .httpBasic(); // (Optional) Allow basic auth if you need
