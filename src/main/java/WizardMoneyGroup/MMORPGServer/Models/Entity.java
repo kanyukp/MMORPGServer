@@ -5,4 +5,5 @@ public interface Entity {
     int getY();
     int getWidth();
     int getHeight();
+    String getSprite();
 }

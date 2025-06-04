@@ -1,23 +1,41 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@jakarta.persistence.Entity
 public class Player implements Entity {
     private int x,y,width,height;
     private int hp;
     private Player.Action currentAction;
-    private List<Item> inventory;
-    private boolean inventoryOpen;
 
-    private String id;
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "player_id")
+    private List<Item> inventory;
+
+    private boolean inventoryOpen;
+    private String sprite;
+
+    @Id
+    private Long id;
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
 
     public enum Action {
         IDLE, MOVE, ATTACK, PLACE, BREAK, DROP, OPEN_INVENTORY, CLOSE_INVENTORY
 
     }
 
-    public Player(int x, int y, int width, int height, int hp ) {
+    public Player() {
+        // Leave empty or initialize with default values if needed
+    }
+
+    public Player(int x, int y, int width, int height, int hp, String sprite ) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -26,8 +44,25 @@ public class Player implements Entity {
         this.currentAction = Player.Action.IDLE;
         this.inventory = new ArrayList<>();
         this.inventoryOpen = false;
+        this.sprite = sprite;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    @Override
+    public String getSprite() {
+        return sprite;
+    }
+
+    public void setSprite(String sprite) {
+        this.sprite = sprite;
+    }
     @Override
     public int getX() {
         return x;
@@ -104,11 +139,11 @@ public class Player implements Entity {
         this.inventoryOpen = inventoryOpen;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 }

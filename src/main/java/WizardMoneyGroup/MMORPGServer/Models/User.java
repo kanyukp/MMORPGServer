@@ -1,9 +1,7 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
+import jakarta.persistence.*;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 
 @Entity
 public class User {
@@ -13,6 +11,10 @@ public class User {
     private Long id;
     private String username;
     private String passwordHash;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Player player;
+
 
     public Long getId() {
         return id;

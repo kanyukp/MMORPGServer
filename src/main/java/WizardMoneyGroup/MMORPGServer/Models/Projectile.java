@@ -6,8 +6,11 @@ public class Projectile implements Entity {
     private int maxTravelDistance;
     private int damage;
     private PlayerAction.Direction direction;
+    private String sprite;
 
-    public Projectile(int x, int y, int width, int height, int originX, int originY, int maxTravelDistance, int damage, PlayerAction.Direction direction) {
+
+
+    public Projectile(int x, int y, int width, int height, int originX, int originY, int maxTravelDistance, int damage, PlayerAction.Direction direction, String sprite) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -17,10 +20,13 @@ public class Projectile implements Entity {
         this.maxTravelDistance = maxTravelDistance;
         this.damage = damage;
         this.direction = direction;
+        this.sprite = "fireball.png"; //TODO
     }
+
     public Projectile(int x, int y, PlayerAction.Direction direction) {
         this.x = x;
         this.y = y;
+        this.sprite = sprite;
         this.width = width;
         this.height = height;
         this.originX = originX;
@@ -28,6 +34,7 @@ public class Projectile implements Entity {
         this.maxTravelDistance = maxTravelDistance;
         this.damage = damage;
         this.direction = direction;
+        this.sprite = "fireball.png";
     }
 
     public void move(){
@@ -50,6 +57,15 @@ public class Projectile implements Entity {
         int dx = x-originX;
         int dy = y-originY;
         return dx * dx + dy * dy > maxTravelDistance * maxTravelDistance;
+    }
+
+    @Override
+    public String getSprite() {
+        return sprite;
+    }
+
+    public void setSprite(String sprite) {
+        this.sprite = sprite;
     }
 
     @Override

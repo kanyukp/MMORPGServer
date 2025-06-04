@@ -9,18 +9,18 @@ public class PlayerAction {
         UP, DOWN, LEFT, RIGHT
     }
 
-    private String playerId;
+    private Long playerId;
     private ActionType actionType;
     private Direction direction;
     private int x, y, width, height;
     private String sprite;
     private String itemName;
 
-    public String getPlayerId() {
+    public Long getPlayerId() {
         return playerId;
     }
 
-    public void setPlayerId(String playerId) {
+    public void setPlayerId(Long playerId) {
         this.playerId = playerId;
     }
 
@@ -86,5 +86,20 @@ public class PlayerAction {
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
+    }
+
+    @Override
+    public String toString() {
+        return "PlayerAction{" +
+                "playerId='" + playerId + '\'' +
+                ", actionType=" + actionType +
+                ", direction=" + direction +
+                ", x=" + x +
+                ", y=" + y +
+                ", width=" + width +
+                ", height=" + height +
+                ", sprite='" + sprite + '\'' +
+                ", itemName='" + itemName + '\'' +
+                '}';
     }
 }

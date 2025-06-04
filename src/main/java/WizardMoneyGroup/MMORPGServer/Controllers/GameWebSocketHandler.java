@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -31,7 +32,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
 
 //    private final GameServer gameServer;
-
+    @Autowired
     public GameWebSocketHandler(GameServer gameServer) {
 //        this.gameServer = gameServer;
         this.gameServer = gameServer;
@@ -39,8 +40,11 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message ) throws Exception {
+        System.out.println("Getting message");
         String payload = message.getPayload();
+        System.out.println(message.getPayload());
         PlayerAction action = objectMapper.readValue(payload, PlayerAction.class);
+        System.out.println(action.toString());
         gameServer.handleClientMessage(action);
     }
 
@@ -54,5 +58,20 @@ public void afterConnectionEstablished(WebSocketSession session) throws Exceptio
     System.out.println("WebSocket connected: " + session.getId());
     gameServer.addSession(session);
 }
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        // Get player info from session before removing
+        String username = session.getPrincipal().getName();
+        // Remove the session from active sessions
+        gameServer.removeSession(session);
+        //gameServer.removePlayer();
+
+        // Log the disconnection
+        System.out.println(String.format("WebSocket connection closed for user: %s with status: %s", username, status));
+
+        // Optional: Notify other players about disconnection
+        String disconnectMessage = String.format("{\"type\":\"player_disconnect\",\"username\":\"%s\"}", username);
+    }
+
 
 }

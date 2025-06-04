@@ -1,5 +1,6 @@
 package WizardMoneyGroup.MMORPGServer.Controllers;
 
+import WizardMoneyGroup.MMORPGServer.Models.Player;
 import WizardMoneyGroup.MMORPGServer.Models.User;
 import WizardMoneyGroup.MMORPGServer.Services.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,20 +28,23 @@ public class LoginController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody AuthRequest request){
-        boolean success = loginService.registerUser(request.username, request.password);
-        if (success) {
-            return ResponseEntity.ok("User registered successfully.");
+    public ResponseEntity<?> register(@RequestBody AuthRequest request){
+        System.out.println("Registering user: ******************************************************" + request.username);
+        Optional<Player> playerOpt = loginService.registerUser(request.username, request.password);
+        if (playerOpt.isPresent()) {
+            return ResponseEntity.ok(playerOpt.get());
         } else {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username already exists.");
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Unable to create player account or username already exists");
         }
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-        Optional<User> userOpt = loginService.loginUser(request.username, request.password);
-        if (userOpt.isPresent()) {
-            return ResponseEntity.ok(userOpt.get());
+        System.out.println("Logging in user: ******************************************************" + request.username);
+        Optional<Player> playerOpt = loginService.loginUser(request.username, request.password);
+        if (playerOpt.isPresent()) {
+            return ResponseEntity.ok(playerOpt.get());
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
         }

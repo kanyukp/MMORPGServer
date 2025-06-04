@@ -19,30 +19,45 @@ public class GameServer {
     private static final int BREAK_RANGE = 50;
 
     private QuadTree quadTree;
-    private final Map<String, Player> players = new ConcurrentHashMap<>();
+    private final Map<Long, Player> players = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<Projectile> projectiles = new ConcurrentLinkedQueue<>();
     private List<Block> blocks;
     private List<ItemEntity> itemEntities;
     private final InventoryService inventoryService;
-    private List<WebSocketSession> sessions;
+    private List<WebSocketSession> sessions = new ArrayList<>();
     private final BlockingQueue<PlayerAction> actionQueue = new LinkedBlockingQueue<>();
     private ScheduledExecutorService executorService;
-    private Map<String, ScheduledFuture<?>> breakingTasks;
+    private Map<Long, ScheduledFuture<?>> breakingTasks;
     private Gson gson = new Gson();
 
 
     private final ScheduledExecutorService gameLoopExecutor = Executors.newScheduledThreadPool(1);
 
-    private final Set<String> playersActedThisFrame = ConcurrentHashMap.newKeySet();
+    private final Set<Long> playersActedThisFrame = ConcurrentHashMap.newKeySet();
 
-
-    @Autowired
-    public GameServer(InventoryService inventoryService) {
-        this.inventoryService = inventoryService;
-        startGameLoop();
-    }
+        @Autowired
+        public GameServer(InventoryService inventoryService) {
+            this.inventoryService = inventoryService;
+            this.quadTree = new QuadTree(0,0, 0, 10000, 10000); // adjust dimensions as needed
+            this.blocks = new ArrayList<>();
+            this.itemEntities = new ArrayList<>();
+            this.executorService = Executors.newScheduledThreadPool(1);
+            this.breakingTasks = new ConcurrentHashMap<>();
+//            System.out.println("In GameServer: Constructor");
+            try {
+                startGameLoop();
+            } catch (Exception e) {
+                System.err.println("GameServer failed to start: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
 
     public void handleClientMessage(PlayerAction action) {
+        System.out.println("In GameServer: handleClientMessage");
+        if (!players.containsKey(action.getPlayerId()))
+        {
+
+        }
         actionQueue.offer(action);
     }
 
@@ -51,12 +66,15 @@ public class GameServer {
     }
 
     private void startGameLoop() {
+//        System.out.println("In GameServer: startGameLoop");
         gameLoopExecutor.scheduleAtFixedRate(this::updateGame, 0, 1000 / 60, TimeUnit.MILLISECONDS);
     }
 
     private void updateGame() {
+        playersActedThisFrame.clear();
         quadTree.clear();
         for (Player player : players.values()) {
+            System.out.println("In GameServer: updateGame: addPlayers to quadTree");
             quadTree.insert(player);
         }
         for (Projectile projectile : projectiles) {
@@ -68,18 +86,20 @@ public class GameServer {
         for (ItemEntity itemEntity : itemEntities) {
             quadTree.insert(itemEntity);
         }
-
+        System.out.println("In GameServer: updateGame: post quadTree.insert");
         processActions();
         updateProjectiles();
-//        updatePlayerPositions();
+        updatePlayerPositions();
         checkItemCollisions();
         //SAVE STATE TO DB TODO
         sendGameStateToClients();
     }
 
     private void processActions() {
+        System.out.println("In GameServer: processActions");
         PlayerAction action;
         while ((action = actionQueue.poll()) != null) {
+            System.out.println("In GameServer: processActions: whileLoop");
             if (!playersActedThisFrame.contains((action.getPlayerId()))) {
                 processAction(action);
                 playersActedThisFrame.add(action.getPlayerId());
@@ -89,6 +109,7 @@ public class GameServer {
 
 
     private void processAction(PlayerAction action) {
+        System.out.println("In GameServer: processAction");
         Player player = players.get(action.getPlayerId());
         if (player != null) {
             if (player.isInventoryOpen() && action.getActionType() != PlayerAction.ActionType.CLOSE_INVENTORY) {
@@ -129,6 +150,8 @@ public class GameServer {
     }
 
     private void movePlayer(Player player, PlayerAction.Direction direction) {
+        System.out.println("In GameServer: movePlayer");
+
         switch (direction) {
             case UP:
                 player.setY(player.getY() - 1);
@@ -236,6 +259,8 @@ public class GameServer {
     }
 
     private void checkItemCollisions() {
+        System.out.println("In GameServer: checkItemCollisions");
+
         Iterator<ItemEntity> iterator = itemEntities.iterator();
         while (iterator.hasNext()) {
             ItemEntity itemEntity = iterator.next();
@@ -266,6 +291,7 @@ public class GameServer {
     }
 
     private void updatePlayerPositions() {
+        System.out.println("In GameServer: checkItemCollisions");
         for (Player player : players.values()) {
             //DO SOMETHING TODO
         }
@@ -311,6 +337,7 @@ public class GameServer {
     }
 
     private void sendGameStateToClients() {
+        System.out.println("In GameServer: sendGameStateToClients");
         GameState gameState = new GameState(players.values(), projectiles, blocks, itemEntities);
         for (Player player : players.values()) {
             List<Player> visiblePlayers = getVisiblePlayers(player);
@@ -319,6 +346,8 @@ public class GameServer {
     }
 
     private List<Player> getVisiblePlayers(Player player) {
+        System.out.println("In GameServer: getVisiblePlayers");
+
         List<Player> visiblePlayers = new ArrayList<>();
         for (Player otherPlayer : players.values()) {
             if (!otherPlayer.equals(player) && isWithinVisibilityRange(player, otherPlayer)) {
@@ -329,6 +358,8 @@ public class GameServer {
     }
 
     private List<Projectile> getVisibleProjectiles(Player player) {
+        System.out.println("In GameServer: getVisibleProjectiles");
+
         List<Projectile> visibleProjectiles = new ArrayList<>();
         for (Projectile projectile : projectiles) {
             if (isWithinVisibilityRange(player, projectile)) {
@@ -339,6 +370,8 @@ public class GameServer {
     }
 
     private boolean isWithinVisibilityRange(Entity entity1, Entity entity2) {
+        System.out.println("In GameServer: isWithinVisibilityRange");
+
         int dx = entity1.getX() - entity2.getX();
         int dy = entity1.getY() - entity2.getY();
         return dx * dx + dy * dy <= VISIBILITY_RANGE * VISIBILITY_RANGE;
@@ -351,6 +384,8 @@ public class GameServer {
     }
 
     private String serializeGameState(GameState gameState) {
+        System.out.println("In GameServer: serializeGameState");
+
         return gson.toJson(gameState);
     }
 
@@ -371,5 +406,9 @@ public class GameServer {
 
     public void addSession( WebSocketSession session){
         sessions.add(session);
+    }
+
+    public void addPlayer(Player player) {
+            players.put(player.getId(), player);
     }
 }
