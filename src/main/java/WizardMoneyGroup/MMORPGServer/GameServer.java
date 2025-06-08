@@ -7,8 +7,10 @@ import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.relational.core.sql.Update;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -24,7 +26,7 @@ public class GameServer {
     private List<Block> blocks;
     private List<ItemEntity> itemEntities;
     private final InventoryService inventoryService;
-    private List<WebSocketSession> sessions = new ArrayList<>();
+    private Map<Long, WebSocketSession> sessions = new HashMap<>();
     private final BlockingQueue<PlayerAction> actionQueue = new LinkedBlockingQueue<>();
     private ScheduledExecutorService executorService;
     private Map<Long, ScheduledFuture<?>> breakingTasks;
@@ -127,11 +129,11 @@ public class GameServer {
                     break;
                 case PLACE:
                     placeBlock(player, action);
-                    player.setCurrentAction(Player.Action.PLACE);
+                    // player.setCurrentAction(Player.Action.PLACE);
                     break;
                 case BREAK:
                     breakBlock(player, action);
-                    player.setCurrentAction(Player.Action.BREAK);
+                    // player.setCurrentAction(Player.Action.BREAK);
                     break;
                 case DROP:
                     dropItem(player, action);
@@ -338,11 +340,28 @@ public class GameServer {
 
     private void sendGameStateToClients() {
         System.out.println("In GameServer: sendGameStateToClients");
-        GameState gameState = new GameState(players.values(), projectiles, blocks, itemEntities);
+        //GameState gameState = new GameState(players.values(), projectiles, blocks, itemEntities);
+        List<Projectile> visibleProjectiles = null;
+        List<Player> visiblePlayers = null;
         for (Player player : players.values()) {
-            List<Player> visiblePlayers = getVisiblePlayers(player);
-            List<Projectile> visibleProjectiles = getVisibleProjectiles(player);
+            visiblePlayers = getVisiblePlayers(player);
+            visibleProjectiles = getVisibleProjectiles(player);
+            GameState gameState = new GameState(visiblePlayers, visibleProjectiles, blocks, itemEntities);
+            String message = serializeGameState(gameState);
+            WebSocketSession playerSession = sessions.get(player.getId());
+            if (playerSession != null && playerSession.isOpen()) {
+                try {
+                    playerSession.sendMessage(new TextMessage(message));
+                } catch (IOException e) {
+                    System.err.println("Error when attempting to send game state to client: " + e.getMessage());
+                }
+            }
+
         }
+
+//        GameState gameState = new GameState(visiblePlayers, visibleProjectiles, blocks, itemEntities);
+
+        // TODO Send the websocket message.
     }
 
     private List<Player> getVisiblePlayers(Player player) {
@@ -400,12 +419,12 @@ public class GameServer {
         }
     }
 
-    public void removeSession( WebSocketSession session){
-        sessions.remove(session);
+    public void removeSession( Long playerId){
+        sessions.remove(playerId);
     }
 
-    public void addSession( WebSocketSession session){
-        sessions.add(session);
+    public void addSession(Long playerId, WebSocketSession session){
+        sessions.put(playerId, session);
     }
 
     public void addPlayer(Player player) {

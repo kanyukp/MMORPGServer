@@ -13,6 +13,8 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.concurrent.*;
 
@@ -55,22 +57,42 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
 @Override
 public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+
+    Long entityId = getUserEntityId(session);
+    if(entityId != null) {
+        gameServer.addSession(entityId, session);
+    }
     System.out.println("WebSocket connected: " + session.getId());
-    gameServer.addSession(session);
 }
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         // Get player info from session before removing
+        {
+            Long playerId = getUserEntityId(session);
+            gameServer.removeSession(playerId);
+        }
+
         String username = session.getPrincipal().getName();
         // Remove the session from active sessions
-        gameServer.removeSession(session);
+        //gameServer.removeSession(session);
         //gameServer.removePlayer();
 
         // Log the disconnection
         System.out.println(String.format("WebSocket connection closed for user: %s with status: %s", username, status));
 
         // Optional: Notify other players about disconnection
-        String disconnectMessage = String.format("{\"type\":\"player_disconnect\",\"username\":\"%s\"}", username);
+        //String disconnectMessage = String.format("{\"type\":\"player_disconnect\",\"username\":\"%s\"}", username);
+    }
+
+    private Long getUserEntityId(WebSocketSession session) {
+        UriComponents uriComponents = UriComponentsBuilder.fromUri(session.getUri()).build();
+        String entityIdString = uriComponents.getQueryParams().getFirst("entityId");
+        try {
+            return Long.parseLong(entityIdString);
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid entity ID received: " + entityIdString);
+            return null;
+        }
     }
 
 
