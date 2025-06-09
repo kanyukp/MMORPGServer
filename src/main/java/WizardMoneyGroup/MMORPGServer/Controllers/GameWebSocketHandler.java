@@ -1,5 +1,6 @@
 package WizardMoneyGroup.MMORPGServer.Controllers;
 
+import WizardMoneyGroup.MMORPGServer.DAO.PlayerRepository;
 import WizardMoneyGroup.MMORPGServer.GameServer;
 import WizardMoneyGroup.MMORPGServer.Models.Player;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,14 +30,17 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
 //    @Autowired
 //    private Executor webSocketExecutor;
+    @Autowired
+    private PlayerRepository playerRepository;
 
 //    private final BlockingQueue messageQueue = new LinkedBlockingQueue<>();
 
 
 //    private final GameServer gameServer;
     @Autowired
-    public GameWebSocketHandler(GameServer gameServer) {
+    public GameWebSocketHandler(GameServer gameServer, PlayerRepository playerRepository) {
 //        this.gameServer = gameServer;
+        this.playerRepository = playerRepository;
         this.gameServer = gameServer;
     }
 
@@ -61,24 +65,37 @@ public void afterConnectionEstablished(WebSocketSession session) throws Exceptio
     Long entityId = getUserEntityId(session);
     if(entityId != null) {
         gameServer.addSession(entityId, session);
+        Player tempPlayer = playerRepository.findByUserId(entityId).get();
+        this.gameServer.addPlayer(tempPlayer);
+
     }
     System.out.println("WebSocket connected: " + session.getId());
+    //System.out.println("WebSocket connected: " + session.getPrincipal().getName());
+    System.out.println("WebSocket connected: " + session);
+
 }
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         // Get player info from session before removing
-        {
-            Long playerId = getUserEntityId(session);
-            gameServer.removeSession(playerId);
+        Long playerId = getUserEntityId(session);
+
+        Player player = gameServer.getPlayer(playerId);
+        if (player != null) {
+            // Save the player to the database
+            playerRepository.save(player);
         }
 
-        String username = session.getPrincipal().getName();
+
+        gameServer.removeSession(playerId);
+        gameServer.removePlayer(playerId);
+
+        //String username = session.getPrincipal().getName();
         // Remove the session from active sessions
-        //gameServer.removeSession(session);
-        //gameServer.removePlayer();
+//        gameServer.removeSession(username);
+//        gameServer.removePlayer();
 
         // Log the disconnection
-        System.out.println(String.format("WebSocket connection closed for user: %s with status: %s", username, status));
+        System.out.println(String.format("WebSocket connection closed for user: %d with status: %s", playerId, status));
 
         // Optional: Notify other players about disconnection
         //String disconnectMessage = String.format("{\"type\":\"player_disconnect\",\"username\":\"%s\"}", username);

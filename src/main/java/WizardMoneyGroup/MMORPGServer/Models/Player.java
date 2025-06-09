@@ -11,7 +11,7 @@ public class Player implements Entity {
     private int hp;
     private Player.Action currentAction;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "player_id")
     private List<Item> inventory;
 

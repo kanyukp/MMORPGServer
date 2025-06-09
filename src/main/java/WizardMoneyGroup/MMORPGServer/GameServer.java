@@ -13,6 +13,9 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
+import com.google.gson.*;
+import com.google.gson.stream.JsonWriter;
+import com.google.gson.stream.JsonReader;
 
 @Component
 public class GameServer {
@@ -55,10 +58,10 @@ public class GameServer {
         }
 
     public void handleClientMessage(PlayerAction action) {
-        System.out.println("In GameServer: handleClientMessage");
+        //System.out.println("In GameServer: handleClientMessage");
         if (!players.containsKey(action.getPlayerId()))
         {
-
+            //System.out.println("In GameServer: handleClientMessage");
         }
         actionQueue.offer(action);
     }
@@ -76,7 +79,7 @@ public class GameServer {
         playersActedThisFrame.clear();
         quadTree.clear();
         for (Player player : players.values()) {
-            System.out.println("In GameServer: updateGame: addPlayers to quadTree");
+            //System.out.println("In GameServer: updateGame: addPlayers to quadTree");
             quadTree.insert(player);
         }
         for (Projectile projectile : projectiles) {
@@ -88,7 +91,7 @@ public class GameServer {
         for (ItemEntity itemEntity : itemEntities) {
             quadTree.insert(itemEntity);
         }
-        System.out.println("In GameServer: updateGame: post quadTree.insert");
+        //System.out.println("In GameServer: updateGame: post quadTree.insert");
         processActions();
         updateProjectiles();
         updatePlayerPositions();
@@ -98,7 +101,7 @@ public class GameServer {
     }
 
     private void processActions() {
-        System.out.println("In GameServer: processActions");
+        //System.out.println("In GameServer: processActions");
         PlayerAction action;
         while ((action = actionQueue.poll()) != null) {
             System.out.println("In GameServer: processActions: whileLoop");
@@ -152,7 +155,7 @@ public class GameServer {
     }
 
     private void movePlayer(Player player, PlayerAction.Direction direction) {
-        System.out.println("In GameServer: movePlayer");
+        //System.out.println("In GameServer: movePlayer");
 
         switch (direction) {
             case UP:
@@ -168,6 +171,7 @@ public class GameServer {
                 player.setX(player.getX() + 1);
                 break;
         }
+        System.out.println(player.getX() + " " + player.getY());
     }
 
     private void createProjectile(Player player, PlayerAction.Direction direction) {
@@ -261,7 +265,7 @@ public class GameServer {
     }
 
     private void checkItemCollisions() {
-        System.out.println("In GameServer: checkItemCollisions");
+        //System.out.println("In GameServer: checkItemCollisions");
 
         Iterator<ItemEntity> iterator = itemEntities.iterator();
         while (iterator.hasNext()) {
@@ -293,7 +297,7 @@ public class GameServer {
     }
 
     private void updatePlayerPositions() {
-        System.out.println("In GameServer: checkItemCollisions");
+        //System.out.println("In GameServer: updatePlayerPositions");
         for (Player player : players.values()) {
             //DO SOMETHING TODO
         }
@@ -339,22 +343,31 @@ public class GameServer {
     }
 
     private void sendGameStateToClients() {
-        System.out.println("In GameServer: sendGameStateToClients");
+        //System.out.println("In GameServer: sendGameStateToClients");
         //GameState gameState = new GameState(players.values(), projectiles, blocks, itemEntities);
         List<Projectile> visibleProjectiles = null;
         List<Player> visiblePlayers = null;
+        System.out.println("There are: " + players.size() + " players in the game");
         for (Player player : players.values()) {
+            System.out.println("Sending message to this player: " + player.getId());
             visiblePlayers = getVisiblePlayers(player);
+            System.out.println("There are: " + visiblePlayers.size() + " players visible to this player");
+            visiblePlayers.add(player);
+            System.out.println("Added the player");
             visibleProjectiles = getVisibleProjectiles(player);
+            System.out.println("There are: " + visibleProjectiles.size() + " projectiles visible to this player");
             GameState gameState = new GameState(visiblePlayers, visibleProjectiles, blocks, itemEntities);
             String message = serializeGameState(gameState);
+            System.out.println("There are this many sessions: " + sessions.size());
             WebSocketSession playerSession = sessions.get(player.getId());
+            System.out.println("Sending message to this player: " + player.getId() + " with message: " + message);
             if (playerSession != null && playerSession.isOpen()) {
                 try {
                     playerSession.sendMessage(new TextMessage(message));
                 } catch (IOException e) {
                     System.err.println("Error when attempting to send game state to client: " + e.getMessage());
                 }
+                System.out.println("Sending message to player: " + player.getId() + " with message: " + message);
             }
 
         }
@@ -377,7 +390,7 @@ public class GameServer {
     }
 
     private List<Projectile> getVisibleProjectiles(Player player) {
-        System.out.println("In GameServer: getVisibleProjectiles");
+        //System.out.println("In GameServer: getVisibleProjectiles");
 
         List<Projectile> visibleProjectiles = new ArrayList<>();
         for (Projectile projectile : projectiles) {
@@ -389,7 +402,7 @@ public class GameServer {
     }
 
     private boolean isWithinVisibilityRange(Entity entity1, Entity entity2) {
-        System.out.println("In GameServer: isWithinVisibilityRange");
+        //System.out.println("In GameServer: isWithinVisibilityRange");
 
         int dx = entity1.getX() - entity2.getX();
         int dy = entity1.getY() - entity2.getY();
@@ -404,9 +417,61 @@ public class GameServer {
 
     private String serializeGameState(GameState gameState) {
         System.out.println("In GameServer: serializeGameState");
+        try {
+            GsonBuilder gsonBuilder = new GsonBuilder()
+            .setExclusionStrategies(new ExclusionStrategy() {
+                @Override
+                public boolean shouldSkipField(FieldAttributes f) {
+                    // Skip fields that might cause circular references
+                    return f.getDeclaringClass() == User.class || 
+                           f.getName().equals("user");
+                }
 
-        return gson.toJson(gameState);
+                @Override
+                public boolean shouldSkipClass(Class<?> clazz) {
+                    return false;
+                }
+            })
+            .serializeNulls()
+            .registerTypeAdapter(List.class, new TypeAdapter<List>() {
+                @Override
+                public void write(JsonWriter out, List value) throws IOException {
+                    if (value == null) {
+                        out.nullValue();
+                        return;
+                    }
+                    out.beginArray();
+                    for (Object item : value) {
+                        if (item != null) {
+                            out.value(gson.toJson(item));
+                        } else {
+                            out.nullValue();
+                        }
+                    }
+                    out.endArray();
+                }
+
+                @Override
+                public List read(JsonReader in) throws IOException {
+                    return null; // We don't need deserialization for this case
+                }
+            });
+
+        Gson customGson = gsonBuilder.create();
+        String temp = customGson.toJson(gameState);
+        if (temp != null) {
+            System.out.println("Serialized state length: " + temp.length());
+            return temp;
+        } else {
+            System.err.println("Serialization produced null result");
+            return "{}"; // Return empty JSON object as fallback
+        }
+    } catch (Exception e) {
+        e.printStackTrace(); // This will print the full stack trace
+        System.err.println("Error when serializing game state: " + e.getMessage());
+        return "{}"; // Return empty JSON object as fallback
     }
+}
 
     public void shutdown() {
         gameLoopExecutor.shutdown();
@@ -423,6 +488,10 @@ public class GameServer {
         sessions.remove(playerId);
     }
 
+    public void removePlayer(Long playerId){
+        players.remove(playerId);
+    }
+
     public void addSession(Long playerId, WebSocketSession session){
         sessions.put(playerId, session);
     }
@@ -430,4 +499,10 @@ public class GameServer {
     public void addPlayer(Player player) {
             players.put(player.getId(), player);
     }
+
+    public Player getPlayer(Long playerId) {
+        // Return the player instance from your players collection
+        return players.get(playerId);
+    }
+
 }

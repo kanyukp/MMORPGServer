@@ -59,7 +59,7 @@ public class LoginService {
         User savedUser = userRepository.save(user);
 
         // Create and save a new player
-        Player player = new Player(0,0,32,32,10,"playertest.png");
+        Player player = new Player(0,0,32,32,10,"charspritetest.png");
         player.setId(savedUser.getId());
         player.setUser(savedUser);
 
@@ -81,7 +81,7 @@ public class LoginService {
             if(passwordEncoder.matches(password, user.getPasswordHash())){
                 System.out.println("Found user!");
                 tempPlayer = playerRepository.findByUserId(user.getId()).get();
-                this.gameServer.addPlayer(tempPlayer);
+                //this.gameServer.addPlayer(tempPlayer);
                 return Optional.of(tempPlayer);
             }
         }
