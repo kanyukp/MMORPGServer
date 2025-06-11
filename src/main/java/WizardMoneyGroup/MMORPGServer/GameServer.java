@@ -160,15 +160,19 @@ public class GameServer {
         switch (direction) {
             case UP:
                 player.setY(player.getY() - 1);
+                player.setDirection(Direction.UP);
                 break;
             case DOWN:
                 player.setY(player.getY() + 1);
+                player.setDirection(Direction.DOWN);
                 break;
             case LEFT:
                 player.setX(player.getX() - 1);
+                player.setDirection(Direction.LEFT);
                 break;
             case RIGHT:
                 player.setX(player.getX() + 1);
+                player.setDirection(Direction.RIGHT);
                 break;
         }
         System.out.println(player.getX() + " " + player.getY());

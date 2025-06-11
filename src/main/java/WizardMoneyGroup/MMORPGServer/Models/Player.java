@@ -25,6 +25,7 @@ public class Player implements Entity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    private Direction direction;
 
     public enum Action {
         IDLE, MOVE, ATTACK, PLACE, BREAK, DROP, OPEN_INVENTORY, CLOSE_INVENTORY
@@ -45,6 +46,16 @@ public class Player implements Entity {
         this.inventory = new ArrayList<>();
         this.inventoryOpen = false;
         this.sprite = sprite;
+        this.direction = Direction.LEFT;
+    }
+
+    // Add getter and setter for direction
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public void setDirection(Direction direction) {
+        this.direction = direction;
     }
 
     public User getUser() {

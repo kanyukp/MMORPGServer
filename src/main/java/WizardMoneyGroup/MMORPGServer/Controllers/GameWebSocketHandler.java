@@ -61,18 +61,22 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
 @Override
 public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-
     Long entityId = getUserEntityId(session);
     if(entityId != null) {
-        gameServer.addSession(entityId, session);
-        Player tempPlayer = playerRepository.findByUserId(entityId).get();
-        this.gameServer.addPlayer(tempPlayer);
-
+        var playerOptional = playerRepository.findByUserId(entityId);
+        if (playerOptional.isPresent()) {
+            Player tempPlayer = playerOptional.get();
+            gameServer.addSession(entityId, session);
+            this.gameServer.addPlayer(tempPlayer);
+        } else {
+            // Handle case where player is not found
+            System.err.println("No player found for entityId: " + entityId);
+            session.close(CloseStatus.SERVER_ERROR);
+            return;
+        }
     }
     System.out.println("WebSocket connected: " + session.getId());
-    //System.out.println("WebSocket connected: " + session.getPrincipal().getName());
     System.out.println("WebSocket connected: " + session);
-
 }
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
