@@ -19,7 +19,7 @@ import com.google.gson.stream.JsonReader;
 
 @Component
 public class GameServer {
-    private static final int VISIBILITY_RANGE = 400;
+    private static final int VISIBILITY_RANGE = 10000;
     private static final int BREAK_TIME_MS = 2000;
     private static final int BREAK_RANGE = 50;
 
@@ -122,6 +122,9 @@ public class GameServer {
             }
 
             switch (action.getActionType()) {
+                case IDLE:
+                    player.setCurrentAction(Player.Action.IDLE);
+                    break;
                 case MOVE:
                     movePlayer(player, action.getDirection());
                     player.setCurrentAction(Player.Action.MOVE);
@@ -129,6 +132,7 @@ public class GameServer {
                 case ATTACK:
                     createProjectile(player, action.getDirection());
                     player.setCurrentAction(Player.Action.ATTACK);
+                    System.out.println("Attacking");
                     break;
                 case PLACE:
                     placeBlock(player, action);
@@ -180,6 +184,7 @@ public class GameServer {
 
     private void createProjectile(Player player, PlayerAction.Direction direction) {
         Projectile projectile = new Projectile(player.getX(), player.getY(), direction);
+        System.out.println("Projectile created");
         projectiles.add(projectile);
     }
 
@@ -327,13 +332,13 @@ public class GameServer {
                     if (intersects(projectile, player)) {
                         player.setHp(player.getHp() - projectile.getDamage());
                         //TODO destroy projectile and maybe player?
-                        iterator.remove();
+                        //iterator.remove();
                         break;
                     }
                 }
             }
             if (projectile.hasExceededMaxDistance()) {
-                iterator.remove();
+                //iterator.remove();
                 //TODO destroy the projectile
             }
         }
@@ -377,8 +382,6 @@ public class GameServer {
         }
 
 //        GameState gameState = new GameState(visiblePlayers, visibleProjectiles, blocks, itemEntities);
-
-        // TODO Send the websocket message.
     }
 
     private List<Player> getVisiblePlayers(Player player) {
@@ -398,6 +401,7 @@ public class GameServer {
 
         List<Projectile> visibleProjectiles = new ArrayList<>();
         for (Projectile projectile : projectiles) {
+            System.out.println("Checking projectile: " + projectile.getX() + " " + projectile.getY());
             if (isWithinVisibilityRange(player, projectile)) {
                 visibleProjectiles.add(projectile);
             }
@@ -410,6 +414,7 @@ public class GameServer {
 
         int dx = entity1.getX() - entity2.getX();
         int dy = entity1.getY() - entity2.getY();
+        System.out.println("Distance between entities: " + Math.sqrt(dx * dx + dy * dy));
         return dx * dx + dy * dy <= VISIBILITY_RANGE * VISIBILITY_RANGE;
     }
 

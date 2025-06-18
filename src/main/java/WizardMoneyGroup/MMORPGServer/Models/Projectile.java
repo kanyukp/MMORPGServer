@@ -26,13 +26,13 @@ public class Projectile implements Entity {
     public Projectile(int x, int y, PlayerAction.Direction direction) {
         this.x = x;
         this.y = y;
-        this.sprite = sprite;
-        this.width = width;
-        this.height = height;
-        this.originX = originX;
-        this.originY = originY;
-        this.maxTravelDistance = maxTravelDistance;
-        this.damage = damage;
+        // this.sprite = sprite;
+        this.width = 16;
+        this.height = 16;
+        this.originX = x;
+        this.originY = y;
+        this.maxTravelDistance = 320;
+        this.damage = 1;
         this.direction = direction;
         this.sprite = "fireball.png";
     }
