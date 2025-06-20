@@ -1,16 +1,21 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class Projectile implements Entity {
+    private static final AtomicLong ID_GENERATOR = new AtomicLong(20);
+    private final long id;
     private int x,y,width,height;
     private int originX, originY;
     private int maxTravelDistance;
     private int damage;
-    private PlayerAction.Direction direction;
+    private Direction direction;
     private String sprite;
 
 
 
-    public Projectile(int x, int y, int width, int height, int originX, int originY, int maxTravelDistance, int damage, PlayerAction.Direction direction, String sprite) {
+    public Projectile(int x, int y, int width, int height, int originX, int originY, int maxTravelDistance, int damage, Direction direction, String sprite) {
+        this.id = ID_GENERATOR.incrementAndGet();
         this.x = x;
         this.y = y;
         this.width = width;
@@ -20,10 +25,11 @@ public class Projectile implements Entity {
         this.maxTravelDistance = maxTravelDistance;
         this.damage = damage;
         this.direction = direction;
-        this.sprite = "fireball.png"; //TODO
+        this.sprite = "Firebolt.png"; //TODO
     }
 
-    public Projectile(int x, int y, PlayerAction.Direction direction) {
+    public Projectile(int x, int y, Direction direction) {
+        this.id = ID_GENERATOR.incrementAndGet();
         this.x = x;
         this.y = y;
         // this.sprite = sprite;
@@ -34,7 +40,12 @@ public class Projectile implements Entity {
         this.maxTravelDistance = 320;
         this.damage = 1;
         this.direction = direction;
-        this.sprite = "fireball.png";
+        this.sprite = "Firebolt.png";
+    }
+
+    // Add getter for id
+    public long getId() {
+        return id;
     }
 
     public void move(){
@@ -46,9 +57,11 @@ public class Projectile implements Entity {
                 y += 1;
                 break;
             case LEFT:
+                System.out.println("Left");
                 x -= 1;
                 break;
             case RIGHT:
+                System.out.println("Right");
                 x += 1;
                 break;
         }
@@ -136,11 +149,11 @@ public class Projectile implements Entity {
         this.damage = damage;
     }
 
-    public PlayerAction.Direction getDirection() {
+    public Direction getDirection() {
         return direction;
     }
 
-    public void setDirection(PlayerAction.Direction direction) {
+    public void setDirection(Direction direction) {
         this.direction = direction;
     }
 }

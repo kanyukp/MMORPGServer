@@ -5,9 +5,6 @@ public class PlayerAction {
     public enum ActionType {
         IDLE, MOVE, ATTACK, PLACE, BREAK, DROP, OPEN_INVENTORY, CLOSE_INVENTORY
     }
-    public enum Direction {
-        UP, DOWN, LEFT, RIGHT
-    }
 
     private Long playerId;
     private ActionType actionType;

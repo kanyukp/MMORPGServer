@@ -158,7 +158,7 @@ public class GameServer {
         }
     }
 
-    private void movePlayer(Player player, PlayerAction.Direction direction) {
+    private void movePlayer(Player player, Direction direction) {
         //System.out.println("In GameServer: movePlayer");
 
         switch (direction) {
@@ -182,7 +182,7 @@ public class GameServer {
         System.out.println(player.getX() + " " + player.getY());
     }
 
-    private void createProjectile(Player player, PlayerAction.Direction direction) {
+    private void createProjectile(Player player, Direction direction) {
         Projectile projectile = new Projectile(player.getX(), player.getY(), direction);
         System.out.println("Projectile created");
         projectiles.add(projectile);
@@ -338,7 +338,7 @@ public class GameServer {
                 }
             }
             if (projectile.hasExceededMaxDistance()) {
-                //iterator.remove();
+                iterator.remove();
                 //TODO destroy the projectile
             }
         }
@@ -365,7 +365,7 @@ public class GameServer {
             System.out.println("Added the player");
             visibleProjectiles = getVisibleProjectiles(player);
             System.out.println("There are: " + visibleProjectiles.size() + " projectiles visible to this player");
-            GameState gameState = new GameState(visiblePlayers, visibleProjectiles, blocks, itemEntities);
+            GameState gameState = new GameState(player, visiblePlayers, visibleProjectiles, blocks, itemEntities);
             String message = serializeGameState(gameState);
             System.out.println("There are this many sessions: " + sessions.size());
             WebSocketSession playerSession = sessions.get(player.getId());

@@ -9,8 +9,10 @@ public class GameState {
     private final Collection<Projectile> projectiles;
     private final Collection<Block> blocks;
     private final Collection<ItemEntity> itemEntities;
+    private final Player currPlayer;
 
-    public GameState(Collection<Player> players, Collection<Projectile> projectiles, Collection<Block> blocks, Collection<ItemEntity> itemEntities) {
+    public GameState(Player currPlayer, Collection<Player> players, Collection<Projectile> projectiles, Collection<Block> blocks, Collection<ItemEntity> itemEntities) {
+        this.currPlayer = currPlayer;
         this.players = players;
         this.projectiles = projectiles;
         this.blocks = blocks;
