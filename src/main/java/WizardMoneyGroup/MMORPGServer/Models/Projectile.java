@@ -11,6 +11,7 @@ public class Projectile implements Entity {
     private int damage;
     private Direction direction;
     private String sprite;
+    private Long playerId;
 
 
 
@@ -28,8 +29,9 @@ public class Projectile implements Entity {
         this.sprite = "Firebolt.png"; //TODO
     }
 
-    public Projectile(int x, int y, Direction direction) {
+    public Projectile(int x, int y, Direction direction, Long playerId) {
         this.id = ID_GENERATOR.incrementAndGet();
+        this.playerId = playerId;
         this.x = x;
         this.y = y;
         // this.sprite = sprite;
@@ -156,4 +158,9 @@ public class Projectile implements Entity {
     public void setDirection(Direction direction) {
         this.direction = direction;
     }
+
+    public Long getPlayerId() { return playerId; }
+
+    public void setPlayerId(Long playerId) { this.playerId = playerId; }
+
 }

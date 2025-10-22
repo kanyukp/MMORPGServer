@@ -2,6 +2,7 @@ package WizardMoneyGroup.MMORPGServer;
 
 import WizardMoneyGroup.MMORPGServer.Models.*;
 //
+import WizardMoneyGroup.MMORPGServer.Services.BlockService;
 import WizardMoneyGroup.MMORPGServer.Services.InventoryService;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import com.google.gson.stream.JsonReader;
 
 @Component
 public class GameServer {
-    private static final int VISIBILITY_RANGE = 10000;
+    private static final int VISIBILITY_RANGE = 200;
     private static final int BREAK_TIME_MS = 2000;
     private static final int BREAK_RANGE = 50;
 
@@ -29,6 +30,7 @@ public class GameServer {
     private List<Block> blocks;
     private List<ItemEntity> itemEntities;
     private final InventoryService inventoryService;
+    private final BlockService blockService;
     private Map<Long, WebSocketSession> sessions = new HashMap<>();
     private final BlockingQueue<PlayerAction> actionQueue = new LinkedBlockingQueue<>();
     private ScheduledExecutorService executorService;
@@ -41,14 +43,15 @@ public class GameServer {
     private final Set<Long> playersActedThisFrame = ConcurrentHashMap.newKeySet();
 
         @Autowired
-        public GameServer(InventoryService inventoryService) {
+        public GameServer(InventoryService inventoryService, BlockService blockService) {
             this.inventoryService = inventoryService;
+            this.blockService = blockService;
             this.quadTree = new QuadTree(0,0, 0, 10000, 10000); // adjust dimensions as needed
             this.blocks = new ArrayList<>();
             this.itemEntities = new ArrayList<>();
             this.executorService = Executors.newScheduledThreadPool(1);
             this.breakingTasks = new ConcurrentHashMap<>();
-//            System.out.println("In GameServer: Constructor");
+
             try {
                 startGameLoop();
             } catch (Exception e) {
@@ -73,11 +76,12 @@ public class GameServer {
     private void startGameLoop() {
 //        System.out.println("In GameServer: startGameLoop");
         gameLoopExecutor.scheduleAtFixedRate(this::updateGame, 0, 1000 / 60, TimeUnit.MILLISECONDS);
+        blocks = blockService.findAllBlocks();
     }
 
     private void updateGame() {
         playersActedThisFrame.clear();
-        quadTree.clear();
+        quadTree.clear();  //TODO should we be clearing the tree every frame? Seems odd
         for (Player player : players.values()) {
             //System.out.println("In GameServer: updateGame: addPlayers to quadTree");
             quadTree.insert(player);
@@ -94,9 +98,10 @@ public class GameServer {
         //System.out.println("In GameServer: updateGame: post quadTree.insert");
         processActions();
         updateProjectiles();
-        updatePlayerPositions();
+//        updatePlayerPositions();
         checkItemCollisions();
-        //SAVE STATE TO DB TODO
+//        checkProjectileCollisions();
+        //SAVE STATE TO DB TODO !!
         sendGameStateToClients();
     }
 
@@ -136,7 +141,7 @@ public class GameServer {
                     break;
                 case PLACE:
                     placeBlock(player, action);
-                    // player.setCurrentAction(Player.Action.PLACE);
+                    player.setCurrentAction(Player.Action.PLACE);
                     break;
                 case BREAK:
                     breakBlock(player, action);
@@ -183,7 +188,7 @@ public class GameServer {
     }
 
     private void createProjectile(Player player, Direction direction) {
-        Projectile projectile = new Projectile(player.getX(), player.getY(), direction);
+        Projectile projectile = new Projectile(player.getX(), player.getY(), direction, player.getId());
         System.out.println("Projectile created");
         projectiles.add(projectile);
     }
@@ -191,9 +196,9 @@ public class GameServer {
     private void placeBlock(Player player, PlayerAction action) {
         int x = action.getX();
         int y = action.getY();
-        int width = action.getWidth();
-        int height = action.getHeight();
-        String sprite = action.getSprite();
+        int width = 32;
+        int height = 32;
+        //String sprite = action.getSprite();
 
         switch (action.getDirection()) {
             case UP:
@@ -210,19 +215,21 @@ public class GameServer {
                 break;
         }
 
-        Block tempBlock = new Block(x, y, width, height, true, sprite);
+        Block tempBlock = new Block(x, y, width, height, true);
 
         List<Entity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), tempBlock);
         for (Entity entity : nearbyEntities) {
             if (entity instanceof Block && ((Block) entity).isCollide()) {
                 if (intersects(tempBlock, entity)) {
 //                    sendResponseToPlayer(player, "No Space"); TODO
+                    System.out.println("NO SPACE!!!!!");
                     return;
                 }
             }
         }
-
+        System.out.println("Adding a block");
         blocks.add(tempBlock);
+        blockService.addBlock(tempBlock);
 
     }
 
@@ -293,7 +300,31 @@ public class GameServer {
             }
         }
     }
-
+//    private void checkProjectileCollisions() {
+//        //System.out.println("In GameServer: checkItemCollisions");
+//
+//        Iterator<Projectile> iterator = projectiles.iterator();
+//        while (iterator.hasNext()) {
+//            Projectile projectile = iterator.next();
+//            List<Entity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), projectile);
+//            for (Entity entity : nearbyEntities) {
+//                if (entity instanceof Player) {
+//                    Player player = (Player) entity;
+//                    if (intersects(projectile, player) && !projectile.getPlayerId().equals(player.getId())) {
+////                        Item item = new Item(0, itemEntity.getName(), itemEntity.getSprite());
+////                        inventoryService.addItemToPlayer(player, item);
+//                        System.out.println("ITS A HIT!!!!   ProjectilePlayerID: " + projectile.getPlayerId() + " Player ID: " + player.getId());
+//                        player.setHp(player.getHp() - 1);
+//                        if (player.getHp() <= 0){
+//                            System.out.println("player hp is: " + player.getHp() + " time to figure out death mechanic");
+//                        }
+//                        iterator.remove();
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//    }
     private void openInventory(Player player) {
         player.setInventoryOpen(true);
         List<Item> inventory = player.getInventory();
@@ -323,16 +354,14 @@ public class GameServer {
             for (Entity entity : nearbyEntities) {
                 if (entity instanceof Block && ((Block) entity).isCollide()) {
                     if (intersects(projectile, entity)) {
-                        //TODO destroy projectile
                         iterator.remove();
                         break;
                     }
                 } else if (entity instanceof Player) {
                     Player player = (Player) entity;
-                    if (intersects(projectile, player)) {
+                    if (intersects(projectile, player) && !projectile.getPlayerId().equals(player.getId())) {
                         player.setHp(player.getHp() - projectile.getDamage());
-                        //TODO destroy projectile and maybe player?
-                        //iterator.remove();
+                        iterator.remove();
                         break;
                     }
                 }

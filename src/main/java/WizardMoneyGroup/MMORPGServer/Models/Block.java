@@ -1,20 +1,37 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jdk.jfr.Enabled;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+@jakarta.persistence.Entity
 public class Block implements Entity {
+//    private static final AtomicLong ID_GENERATOR = new AtomicLong(20);
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private int x,y,width,height;
+//    private final long id;
     private boolean collide;
     private String sprite;
 
-    public Block(int x, int y, int width, int height, boolean collide, String sprite) {
+    public Block(){}
+
+    public Block(int x, int y, int width, int height, boolean collide) {
+//        this.id = ID_GENERATOR.incrementAndGet();
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.collide = collide;
-        this.sprite = sprite;
+        this.sprite = "TestMap.png";
     }
 
     public Block(int x, int y) {
+//        this.id = ID_GENERATOR.incrementAndGet();
         this.x = x;
         this.y = y;
     }
