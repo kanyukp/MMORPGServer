@@ -1,10 +1,11 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Projectile implements Entity {
-    private static final AtomicLong ID_GENERATOR = new AtomicLong(20);
-    private final long id;
+public class Projectile extends WorldEntity {
+    //private static final AtomicLong ID_GENERATOR = new AtomicLong(20);
+    //private final long id;
     private int x,y,width,height;
     private int originX, originY;
     private int maxTravelDistance;
@@ -16,7 +17,7 @@ public class Projectile implements Entity {
 
 
     public Projectile(int x, int y, int width, int height, int originX, int originY, int maxTravelDistance, int damage, Direction direction, String sprite) {
-        this.id = ID_GENERATOR.incrementAndGet();
+        //this.id = ID_GENERATOR.incrementAndGet();
         this.x = x;
         this.y = y;
         this.width = width;
@@ -30,7 +31,7 @@ public class Projectile implements Entity {
     }
 
     public Projectile(int x, int y, Direction direction, Long playerId) {
-        this.id = ID_GENERATOR.incrementAndGet();
+        //this.id = ID_GENERATOR.incrementAndGet();
         this.playerId = playerId;
         this.x = x;
         this.y = y;
@@ -45,10 +46,10 @@ public class Projectile implements Entity {
         this.sprite = "Firebolt.png";
     }
 
-    // Add getter for id
-    public long getId() {
-        return id;
-    }
+//    // Add getter for id
+//    public UUID getId() {
+//        return id;
+//    }
 
     public void move(){
         switch (direction) {
@@ -59,11 +60,9 @@ public class Projectile implements Entity {
                 y += 1;
                 break;
             case LEFT:
-                System.out.println("Left");
                 x -= 1;
                 break;
             case RIGHT:
-                System.out.println("Right");
                 x += 1;
                 break;
         }
@@ -74,10 +73,10 @@ public class Projectile implements Entity {
         return dx * dx + dy * dy > maxTravelDistance * maxTravelDistance;
     }
 
-    @Override
-    public String getSprite() {
-        return sprite;
-    }
+//    @Override
+//    public String getSprite() {
+//        return sprite;
+//    }
 
     public void setSprite(String sprite) {
         this.sprite = sprite;

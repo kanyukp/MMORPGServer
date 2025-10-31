@@ -92,14 +92,14 @@ public class GameServer {
         for (Block block : blocks) {
             quadTree.insert(block);
         }
-        for (ItemEntity itemEntity : itemEntities) {
-            quadTree.insert(itemEntity);
-        }
+//        for (ItemEntity itemEntity : itemEntities) {
+//            quadTree.insert(itemEntity);
+//        }
         //System.out.println("In GameServer: updateGame: post quadTree.insert");
         processActions();
         updateProjectiles();
 //        updatePlayerPositions();
-        checkItemCollisions();
+//        checkItemCollisions();
 //        checkProjectileCollisions();
         //SAVE STATE TO DB TODO !!
         sendGameStateToClients();
@@ -109,7 +109,6 @@ public class GameServer {
         //System.out.println("In GameServer: processActions");
         PlayerAction action;
         while ((action = actionQueue.poll()) != null) {
-            System.out.println("In GameServer: processActions: whileLoop");
             if (!playersActedThisFrame.contains((action.getPlayerId()))) {
                 processAction(action);
                 playersActedThisFrame.add(action.getPlayerId());
@@ -119,7 +118,6 @@ public class GameServer {
 
 
     private void processAction(PlayerAction action) {
-        System.out.println("In GameServer: processAction");
         Player player = players.get(action.getPlayerId());
         if (player != null) {
             if (player.isInventoryOpen() && action.getActionType() != PlayerAction.ActionType.CLOSE_INVENTORY) {
@@ -137,7 +135,6 @@ public class GameServer {
                 case ATTACK:
                     createProjectile(player, action.getDirection());
                     player.setCurrentAction(Player.Action.ATTACK);
-                    System.out.println("Attacking");
                     break;
                 case PLACE:
                     placeBlock(player, action);
@@ -164,8 +161,6 @@ public class GameServer {
     }
 
     private void movePlayer(Player player, Direction direction) {
-        //System.out.println("In GameServer: movePlayer");
-
         switch (direction) {
             case UP:
                 player.setY(player.getY() - 1);
@@ -189,7 +184,6 @@ public class GameServer {
 
     private void createProjectile(Player player, Direction direction) {
         Projectile projectile = new Projectile(player.getX(), player.getY(), direction, player.getId());
-        System.out.println("Projectile created");
         projectiles.add(projectile);
     }
 
@@ -217,8 +211,8 @@ public class GameServer {
 
         Block tempBlock = new Block(x, y, width, height, true);
 
-        List<Entity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), tempBlock);
-        for (Entity entity : nearbyEntities) {
+        List<WorldEntity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), tempBlock);
+        for (WorldEntity entity : nearbyEntities) {
             if (entity instanceof Block && ((Block) entity).isCollide()) {
                 if (intersects(tempBlock, entity)) {
 //                    sendResponseToPlayer(player, "No Space"); TODO
@@ -227,7 +221,7 @@ public class GameServer {
                 }
             }
         }
-        System.out.println("Adding a block");
+        System.out.println("Adding a block: " + tempBlock);
         blocks.add(tempBlock);
         blockService.addBlock(tempBlock);
 
@@ -280,26 +274,24 @@ public class GameServer {
         }
     }
 
-    private void checkItemCollisions() {
-        //System.out.println("In GameServer: checkItemCollisions");
-
-        Iterator<ItemEntity> iterator = itemEntities.iterator();
-        while (iterator.hasNext()) {
-            ItemEntity itemEntity = iterator.next();
-            List<Entity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), itemEntity);
-            for (Entity entity : nearbyEntities) {
-                if (entity instanceof Player) {
-                    Player player = (Player) entity;
-                    if (intersects(itemEntity, player)) {
-                        Item item = new Item(0, itemEntity.getName(), itemEntity.getSprite());
-                        inventoryService.addItemToPlayer(player, item);
-                        iterator.remove();
-                        break;
-                    }
-                }
-            }
-        }
-    }
+//    private void checkItemCollisions() {
+//        Iterator<ItemEntity> iterator = itemEntities.iterator();
+//        while (iterator.hasNext()) {
+//            ItemEntity itemEntity = iterator.next();
+//            List<Entity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), itemEntity);
+//            for (Entity entity : nearbyEntities) {
+//                if (entity instanceof Player) {
+//                    Player player = (Player) entity;
+//                    if (intersects(itemEntity, player)) {
+//                        Item item = new Item(0, itemEntity.getName(), itemEntity.getSprite());
+//                        inventoryService.addItemToPlayer(player, item);
+//                        iterator.remove();
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//    }
 //    private void checkProjectileCollisions() {
 //        //System.out.println("In GameServer: checkItemCollisions");
 //
@@ -337,7 +329,6 @@ public class GameServer {
     }
 
     private void updatePlayerPositions() {
-        //System.out.println("In GameServer: updatePlayerPositions");
         for (Player player : players.values()) {
             //DO SOMETHING TODO
         }
@@ -350,8 +341,8 @@ public class GameServer {
             Projectile projectile = iterator.next();
             projectile.move();
 
-            List<Entity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), projectile);
-            for (Entity entity : nearbyEntities) {
+            List<WorldEntity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), projectile);
+            for (WorldEntity entity : nearbyEntities) {
                 if (entity instanceof Block && ((Block) entity).isCollide()) {
                     if (intersects(projectile, entity)) {
                         iterator.remove();
@@ -373,7 +364,7 @@ public class GameServer {
         }
     }
 
-    private boolean intersects(Entity a, Entity b) {
+    private boolean intersects(WorldEntity a, WorldEntity b) {
         return a.getX() < b.getX() + b.getWidth() &&
                 a.getX() + a.getWidth() > b.getX() &&
                 a.getY() < b.getY() + b.getHeight() &&
@@ -381,22 +372,21 @@ public class GameServer {
     }
 
     private void sendGameStateToClients() {
-        //System.out.println("In GameServer: sendGameStateToClients");
         //GameState gameState = new GameState(players.values(), projectiles, blocks, itemEntities);
         List<Projectile> visibleProjectiles = null;
         List<Player> visiblePlayers = null;
-        System.out.println("There are: " + players.size() + " players in the game");
+//        System.out.println("There are: " + players.size() + " players in the game");
         for (Player player : players.values()) {
-            System.out.println("Sending message to this player: " + player.getId());
+//            System.out.println("Sending message to this player: " + player.getId());
             visiblePlayers = getVisiblePlayers(player);
-            System.out.println("There are: " + visiblePlayers.size() + " players visible to this player");
+//            System.out.println("There are: " + visiblePlayers.size() + " players visible to this player");
             visiblePlayers.add(player);
-            System.out.println("Added the player");
+//            System.out.println("Added the player");
             visibleProjectiles = getVisibleProjectiles(player);
-            System.out.println("There are: " + visibleProjectiles.size() + " projectiles visible to this player");
+//            System.out.println("There are: " + visibleProjectiles.size() + " projectiles visible to this player");
             GameState gameState = new GameState(player, visiblePlayers, visibleProjectiles, blocks, itemEntities);
             String message = serializeGameState(gameState);
-            System.out.println("There are this many sessions: " + sessions.size());
+//            System.out.println("There are this many sessions: " + sessions.size());
             WebSocketSession playerSession = sessions.get(player.getId());
             System.out.println("Sending message to this player: " + player.getId() + " with message: " + message);
             if (playerSession != null && playerSession.isOpen()) {
@@ -405,7 +395,7 @@ public class GameServer {
                 } catch (IOException e) {
                     System.err.println("Error when attempting to send game state to client: " + e.getMessage());
                 }
-                System.out.println("Sending message to player: " + player.getId() + " with message: " + message);
+//                System.out.println("Sending message to player: " + player.getId() + " with message: " + message);
             }
 
         }
@@ -414,8 +404,6 @@ public class GameServer {
     }
 
     private List<Player> getVisiblePlayers(Player player) {
-        System.out.println("In GameServer: getVisiblePlayers");
-
         List<Player> visiblePlayers = new ArrayList<>();
         for (Player otherPlayer : players.values()) {
             if (!otherPlayer.equals(player) && isWithinVisibilityRange(player, otherPlayer)) {
@@ -426,11 +414,8 @@ public class GameServer {
     }
 
     private List<Projectile> getVisibleProjectiles(Player player) {
-        //System.out.println("In GameServer: getVisibleProjectiles");
-
         List<Projectile> visibleProjectiles = new ArrayList<>();
         for (Projectile projectile : projectiles) {
-            System.out.println("Checking projectile: " + projectile.getX() + " " + projectile.getY());
             if (isWithinVisibilityRange(player, projectile)) {
                 visibleProjectiles.add(projectile);
             }
@@ -438,23 +423,19 @@ public class GameServer {
         return visibleProjectiles;
     }
 
-    private boolean isWithinVisibilityRange(Entity entity1, Entity entity2) {
-        //System.out.println("In GameServer: isWithinVisibilityRange");
-
+    private boolean isWithinVisibilityRange(WorldEntity entity1, WorldEntity entity2) {
         int dx = entity1.getX() - entity2.getX();
         int dy = entity1.getY() - entity2.getY();
-        System.out.println("Distance between entities: " + Math.sqrt(dx * dx + dy * dy));
         return dx * dx + dy * dy <= VISIBILITY_RANGE * VISIBILITY_RANGE;
     }
 
-    private boolean isWithinBreakRange(Entity entity1, Entity entity2) {
+    private boolean isWithinBreakRange(WorldEntity entity1, WorldEntity entity2) {
         int dx = entity1.getX() - entity2.getX();
         int dy = entity1.getY() - entity2.getY();
         return dx * dx + dy * dy <= BREAK_RANGE * BREAK_RANGE;
     }
 
     private String serializeGameState(GameState gameState) {
-        System.out.println("In GameServer: serializeGameState");
         try {
             GsonBuilder gsonBuilder = new GsonBuilder()
             .setExclusionStrategies(new ExclusionStrategy() {
@@ -498,7 +479,6 @@ public class GameServer {
         Gson customGson = gsonBuilder.create();
         String temp = customGson.toJson(gameState);
         if (temp != null) {
-            System.out.println("Serialized state length: " + temp.length());
             return temp;
         } else {
             System.err.println("Serialization produced null result");

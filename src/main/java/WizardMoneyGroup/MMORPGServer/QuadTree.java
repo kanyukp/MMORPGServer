@@ -1,5 +1,6 @@
 package WizardMoneyGroup.MMORPGServer;
 import WizardMoneyGroup.MMORPGServer.Models.Entity;
+import WizardMoneyGroup.MMORPGServer.Models.WorldEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +10,7 @@ public class QuadTree {
     private static final int MAX_LEVELS = 5;
 
     private int level;
-    private List<Entity> entities;
+    private List<WorldEntity> entities;
     private QuadTree[] nodes;
     private int x,y,width,height;
 
@@ -45,7 +46,7 @@ public class QuadTree {
         nodes[3] = new QuadTree(level + 1, xMid, yMid, subWidth, subHeight);
     }
 
-    private int getIndex(Entity entity) {
+    private int getIndex(WorldEntity entity) {
         int index = -1;
         double verticalMidpoint = x + (width / 2);
         double horizontalMidpoint = y + (height / 2);
@@ -69,7 +70,7 @@ public class QuadTree {
         return index;
     }
 
-    public void insert(Entity entity) {
+    public void insert(WorldEntity entity) {
         if(nodes[0] != null) {
             int index = getIndex(entity);
             if (index != -1) {
@@ -95,13 +96,13 @@ public class QuadTree {
         }
     }
 
-    public List<Entity> retrieve(List<Entity> returnEntities, Entity entity){
+    public List<WorldEntity> retrieve(List<WorldEntity> returnEntities, WorldEntity entity){
         int index = getIndex(entity);
         if(index != -1 && nodes[0] != null) {
             nodes[index].retrieve(returnEntities, entity);
         }
 
-        for(Entity e : entities) {
+        for(WorldEntity e : entities) {
             if(intersects(e, entity)) {
                 returnEntities.add(e);
             }
@@ -110,7 +111,7 @@ public class QuadTree {
         return returnEntities;
     }
 
-    private boolean intersects(Entity a, Entity b) {
+    private boolean intersects(WorldEntity a, WorldEntity b) {
         return a.getX() < b.getX() + b.getWidth() &&
                 a.getX() + a.getWidth() > b.getX() &&
                 a.getY() < b.getY() + b.getHeight() &&

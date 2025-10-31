@@ -8,7 +8,7 @@ import jdk.jfr.Enabled;
 import java.util.concurrent.atomic.AtomicLong;
 
 @jakarta.persistence.Entity
-public class Block implements Entity {
+public class Block extends WorldEntity {
 //    private static final AtomicLong ID_GENERATOR = new AtomicLong(20);
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +34,19 @@ public class Block implements Entity {
 //        this.id = ID_GENERATOR.incrementAndGet();
         this.x = x;
         this.y = y;
+    }
+
+    @Override
+    public String toString() {
+        return "Block{" +
+                "id=" + id +
+                ", x=" + x +
+                ", y=" + y +
+                ", width=" + width +
+                ", height=" + height +
+                ", collide=" + collide +
+                ", sprite='" + sprite + '\'' +
+                '}';
     }
 
     @Override

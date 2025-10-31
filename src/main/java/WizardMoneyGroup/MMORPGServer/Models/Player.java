@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @jakarta.persistence.Entity
-public class Player implements Entity {
+public class Player extends WorldEntity {
     private int x,y,width,height;
     private int hp;
     private Player.Action currentAction;
@@ -66,7 +66,7 @@ public class Player implements Entity {
         this.user = user;
     }
 
-    @Override
+
     public String getSprite() {
         return sprite;
     }
