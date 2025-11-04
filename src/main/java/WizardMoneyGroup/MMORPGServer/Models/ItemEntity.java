@@ -1,6 +1,6 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
-public class ItemEntity implements Entity {
+public class ItemEntity extends Entity {
     private int x,y,width,height;
     private String name;
     private String sprite;
@@ -14,7 +14,7 @@ public class ItemEntity implements Entity {
         this.sprite = sprite;
     }
 
-    @Override
+
     public int getX() {
         return x;
     }
@@ -23,7 +23,7 @@ public class ItemEntity implements Entity {
         this.x = x;
     }
 
-    @Override
+
     public int getY() {
         return y;
     }
@@ -32,7 +32,7 @@ public class ItemEntity implements Entity {
         this.y = y;
     }
 
-    @Override
+
     public int getWidth() {
         return width;
     }
@@ -41,7 +41,6 @@ public class ItemEntity implements Entity {
         this.width = width;
     }
 
-    @Override
     public int getHeight() {
         return height;
     }
