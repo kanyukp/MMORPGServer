@@ -60,7 +60,7 @@ public class LoginService {
 
         // Create and save a new player
         Player player = new Player(0,0,32,32,10,"charspritetest.png");
-        player.setId(savedUser.getId());
+//        player.setId(savedUser.getId());
         player.setUser(savedUser);
 
 

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @jakarta.persistence.Entity
 public class Player extends WorldEntity {
@@ -18,11 +19,10 @@ public class Player extends WorldEntity {
     private boolean inventoryOpen;
     private String sprite;
 
-    @Id
-    private Long id;
-
     @OneToOne
-    @JoinColumn(name = "user_id")
+    @MapsId
+    @JoinColumn(name = "id")
+//    @JoinColumn(name = "id", columnDefinition = "BINARY(16)")
     private User user;
 
     private Direction direction;
@@ -37,6 +37,7 @@ public class Player extends WorldEntity {
     }
 
     public Player(int x, int y, int width, int height, int hp, String sprite ) {
+//        super();
         this.x = x;
         this.y = y;
         this.width = width;
@@ -150,11 +151,4 @@ public class Player extends WorldEntity {
         this.inventoryOpen = inventoryOpen;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 }

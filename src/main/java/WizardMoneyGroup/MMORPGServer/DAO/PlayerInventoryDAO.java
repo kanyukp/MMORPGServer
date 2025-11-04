@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public class PlayerInventoryDAO {
@@ -14,19 +15,19 @@ public class PlayerInventoryDAO {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<Item> getPlayerInventory(Long playerId) {
+    public List<Item> getPlayerInventory(UUID playerId) {
         String sql = "SELECT i.ItemID, i.Name, i.Sprite FROM Items i " +
                      "JOIN PlayerInventory pi ON i.ItemID = pi.ItemID " +
                      "WHERE pi.PlayerID = ? ";
         return jdbcTemplate.query(sql, new ItemDAO.ItemRowMapper(), playerId);
     }
 
-    public void addItemToPlayer(Long playerId, int itemId) {
+    public void addItemToPlayer(UUID playerId, int itemId) {
         String sql = "INSERT INTO PlayerInventory (PlayerID, ItemID) VALUES (?,?)";
         jdbcTemplate.update(sql, playerId, itemId);
     }
 
-    public void removeItemFromPlayer(Long playerId, int itemId) {
+    public void removeItemFromPlayer(UUID playerId, int itemId) {
         String sql = "DELETE FROM PlayerInventory WHERE PlayerID = ? AND ItemID = ?";
         jdbcTemplate.update(sql, playerId, itemId);
     }

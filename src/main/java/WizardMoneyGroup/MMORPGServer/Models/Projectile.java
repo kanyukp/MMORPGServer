@@ -12,12 +12,13 @@ public class Projectile extends WorldEntity {
     private int damage;
     private Direction direction;
     private String sprite;
-    private Long playerId;
+    private UUID playerId;
 
 
 
     public Projectile(int x, int y, int width, int height, int originX, int originY, int maxTravelDistance, int damage, Direction direction, String sprite) {
         //this.id = ID_GENERATOR.incrementAndGet();
+        super();
         this.x = x;
         this.y = y;
         this.width = width;
@@ -30,8 +31,9 @@ public class Projectile extends WorldEntity {
         this.sprite = "Firebolt.png"; //TODO
     }
 
-    public Projectile(int x, int y, Direction direction, Long playerId) {
+    public Projectile(int x, int y, Direction direction, UUID playerId) {
         //this.id = ID_GENERATOR.incrementAndGet();
+        super();
         this.playerId = playerId;
         this.x = x;
         this.y = y;
@@ -158,8 +160,8 @@ public class Projectile extends WorldEntity {
         this.direction = direction;
     }
 
-    public Long getPlayerId() { return playerId; }
+    public UUID getPlayerId() { return playerId; }
 
-    public void setPlayerId(Long playerId) { this.playerId = playerId; }
+    public void setPlayerId(UUID playerId) { this.playerId = playerId; }
 
 }

@@ -17,5 +17,5 @@ public abstract class Entity {
 
     public UUID getId() { return id; }
 
-    protected void setId(UUID id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
 }

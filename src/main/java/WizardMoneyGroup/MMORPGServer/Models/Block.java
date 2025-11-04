@@ -22,6 +22,7 @@ public class Block extends WorldEntity {
 
     public Block(int x, int y, int width, int height, boolean collide) {
 //        this.id = ID_GENERATOR.incrementAndGet();
+        super();
         this.x = x;
         this.y = y;
         this.width = width;
@@ -32,6 +33,7 @@ public class Block extends WorldEntity {
 
     public Block(int x, int y) {
 //        this.id = ID_GENERATOR.incrementAndGet();
+        super();
         this.x = x;
         this.y = y;
     }

@@ -23,8 +23,8 @@ public abstract class WorldEntity extends Entity {
 
     public WorldEntity() {
         super();
-        this.x = 0;
-        this.y = 0;
+//        this.x = 0;
+//        this.y = 0;
     }
 
     public WorldEntity(int x, int y) {

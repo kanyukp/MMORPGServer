@@ -17,6 +17,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.UUID;
 import java.util.concurrent.*;
 
 @CrossOrigin(origins = "http://localhost:4200", methods = {RequestMethod.GET, RequestMethod.POST})
@@ -61,7 +62,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
 @Override
 public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-    Long entityId = getUserEntityId(session);
+    UUID entityId = getUserEntityId(session);
     if(entityId != null) {
         var playerOptional = playerRepository.findByUserId(entityId);
         if (playerOptional.isPresent()) {
@@ -81,7 +82,7 @@ public void afterConnectionEstablished(WebSocketSession session) throws Exceptio
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         // Get player info from session before removing
-        Long playerId = getUserEntityId(session);
+        UUID playerId = getUserEntityId(session);
 
         Player player = gameServer.getPlayer(playerId);
         if (player != null) {
@@ -105,11 +106,11 @@ public void afterConnectionEstablished(WebSocketSession session) throws Exceptio
         //String disconnectMessage = String.format("{\"type\":\"player_disconnect\",\"username\":\"%s\"}", username);
     }
 
-    private Long getUserEntityId(WebSocketSession session) {
+    private UUID getUserEntityId(WebSocketSession session) {
         UriComponents uriComponents = UriComponentsBuilder.fromUri(session.getUri()).build();
         String entityIdString = uriComponents.getQueryParams().getFirst("entityId");
         try {
-            return Long.parseLong(entityIdString);
+            return UUID.fromString((entityIdString));
         } catch (NumberFormatException e) {
             System.err.println("Invalid entity ID received: " + entityIdString);
             return null;

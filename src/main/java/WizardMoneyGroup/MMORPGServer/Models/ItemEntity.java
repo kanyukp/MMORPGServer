@@ -1,6 +1,6 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
-public class ItemEntity extends Entity {
+public class ItemEntity extends WorldEntity {
     private int x,y,width,height;
     private String name;
     private String sprite;

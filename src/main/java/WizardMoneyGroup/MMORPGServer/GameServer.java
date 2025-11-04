@@ -25,22 +25,22 @@ public class GameServer {
     private static final int BREAK_RANGE = 50;
 
     private QuadTree quadTree;
-    private final Map<Long, Player> players = new ConcurrentHashMap<>();
+    private final Map<UUID, Player> players = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<Projectile> projectiles = new ConcurrentLinkedQueue<>();
     private List<Block> blocks;
     private List<ItemEntity> itemEntities;
     private final InventoryService inventoryService;
     private final BlockService blockService;
-    private Map<Long, WebSocketSession> sessions = new HashMap<>();
+    private Map<UUID, WebSocketSession> sessions = new HashMap<>();
     private final BlockingQueue<PlayerAction> actionQueue = new LinkedBlockingQueue<>();
     private ScheduledExecutorService executorService;
-    private Map<Long, ScheduledFuture<?>> breakingTasks;
+    private Map<UUID, ScheduledFuture<?>> breakingTasks;
     private Gson gson = new Gson();
 
 
     private final ScheduledExecutorService gameLoopExecutor = Executors.newScheduledThreadPool(1);
 
-    private final Set<Long> playersActedThisFrame = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> playersActedThisFrame = ConcurrentHashMap.newKeySet();
 
         @Autowired
         public GameServer(InventoryService inventoryService, BlockService blockService) {
@@ -231,8 +231,8 @@ public class GameServer {
         int mouseX = action.getX();
         int mouseY = action.getY();
 
-        List<Entity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), player);
-        for (Entity entity : nearbyEntities) {
+        List<WorldEntity> nearbyEntities = quadTree.retrieve(new ArrayList<>(), player);
+        for (WorldEntity entity : nearbyEntities) {
             if (entity instanceof Block && ((Block) entity).isCollide()) {
                 Block block = (Block) entity;
                 Block mouse = new Block(mouseX, mouseY);
@@ -502,15 +502,15 @@ public class GameServer {
         }
     }
 
-    public void removeSession( Long playerId){
+    public void removeSession( UUID playerId){
         sessions.remove(playerId);
     }
 
-    public void removePlayer(Long playerId){
+    public void removePlayer(UUID playerId){
         players.remove(playerId);
     }
 
-    public void addSession(Long playerId, WebSocketSession session){
+    public void addSession(UUID playerId, WebSocketSession session){
         sessions.put(playerId, session);
     }
 
@@ -518,7 +518,7 @@ public class GameServer {
             players.put(player.getId(), player);
     }
 
-    public Player getPlayer(Long playerId) {
+    public Player getPlayer(UUID playerId) {
         // Return the player instance from your players collection
         return players.get(playerId);
     }

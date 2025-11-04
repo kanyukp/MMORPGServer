@@ -1,23 +1,25 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
+import java.util.UUID;
+
 public class PlayerAction {
 
     public enum ActionType {
         IDLE, MOVE, ATTACK, PLACE, BREAK, DROP, OPEN_INVENTORY, CLOSE_INVENTORY
     }
 
-    private Long playerId;
+    private UUID playerId;
     private ActionType actionType;
     private Direction direction;
     private int x, y, width, height;
     private String sprite;
     private String itemName;
 
-    public Long getPlayerId() {
+    public UUID getPlayerId() {
         return playerId;
     }
 
-    public void setPlayerId(Long playerId) {
+    public void setPlayerId(UUID playerId) {
         this.playerId = playerId;
     }
 

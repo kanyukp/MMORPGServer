@@ -2,25 +2,35 @@ package WizardMoneyGroup.MMORPGServer.Models;
 
 import jakarta.persistence.*;
 import jakarta.persistence.Entity;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
+
+import java.util.UUID;
 
 @Entity
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+//    @JdbcTypeCode(SqlTypes.BINARY)
+//    @Column(columnDefinition = "BINARY(16)")
+    private UUID id;
+
     private String username;
     private String passwordHash;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Player player;
 
+    public User() {
+        this.id = UUID.randomUUID();
+    }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
