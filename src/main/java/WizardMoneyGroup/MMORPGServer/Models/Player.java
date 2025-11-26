@@ -14,7 +14,7 @@ public class Player extends WorldEntity {
 
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "player_id")
-    private List<Item> inventory;
+    private List<Item> inventory = new ArrayList<>();
 
     private boolean inventoryOpen;
     private String sprite;

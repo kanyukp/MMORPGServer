@@ -1,9 +1,7 @@
 package WizardMoneyGroup.MMORPGServer.Models;
 
+import jakarta.persistence.*;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 
 @Entity
 public class Item {
@@ -14,6 +12,10 @@ public class Item {
 
     private String name;
     private String sprite;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "player_id", nullable = true)
+    private Player owner;
 
     public Item(int itemId, String name, String sprite) {
         this.itemId = itemId;
@@ -43,5 +45,13 @@ public class Item {
 
     public void setSprite(String sprite) {
         this.sprite = sprite;
+    }
+
+    public Player getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Player owner) {
+        this.owner = owner;
     }
 }
